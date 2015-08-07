@@ -125,11 +125,13 @@ public class RecordingActivity extends Activity {
 		if (!mAudioPrepared || !mVideoPrepared) {
 			return;
 		}
-
-		// open the recorder
-		mRecorder.open();	
+		
 		Camera.Parameters p = mCamera.getParameters();
-		Size s = p.getPreviewSize();
+		final Size s = p.getPreviewSize();
+		
+		// open the recorder
+		mRecorder.open(s.width, s.height);
+		
 		// encode every video frame
 		mCamera.setPreviewCallback(new PreviewCallback() {
 			@Override
@@ -140,8 +142,6 @@ public class RecordingActivity extends Activity {
 				// update FPS every 1000ms (i.e. 1s)
 				if (currentTime - mStartTime > 1000) {
 					double fps = mFrameCount / ((currentTime - mStartTime)/1000.0);
-					Camera.Parameters p = mCamera.getParameters();
-					Size s = p.getPreviewSize();
 					mInfoText.setText(String.format("Recording... video size: %dx%d, FPS: %.2f", s.width, s.height, fps));
 					mStartTime = currentTime;
 					mFrameCount = 0;

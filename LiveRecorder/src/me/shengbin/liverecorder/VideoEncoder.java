@@ -1,7 +1,7 @@
 package me.shengbin.liverecorder;
 
 public interface VideoEncoder {
-	void open();
-	void encode();
+	void open(int width, int height);
+	void encode(byte[] data, long presentationTimeUs);
 	void close();
 }
