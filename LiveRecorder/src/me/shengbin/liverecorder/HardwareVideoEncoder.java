@@ -68,11 +68,11 @@ public class HardwareVideoEncoder implements VideoEncoder {
 
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
-		
+		mEncoder.stop();
+		mEncoder.release();
 	}
 
-	private static byte[] YV12toYUV420Planar(byte[] input, byte[] output, int width, int height) {
+	public static byte[] YV12toYUV420Planar(byte[] input, byte[] output, int width, int height) {
         /*
          * COLOR_FormatYUV420Planar is I420 which is like YV12, but with U and V reversed.
          * So we just have to reverse U and V.
