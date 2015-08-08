@@ -29,6 +29,7 @@ public class LiveMediaRecorder {
 	
 	private VideoEncoder mVideoEncoder = null;
 	private AudioEncoder mAudioEncoder = null;
+	private StreamOutput mOutput = null;
 	
 	private long mStartTimeMillis = 0;
 	private long mFrameCount = 0;
@@ -86,9 +87,10 @@ public class LiveMediaRecorder {
 			return;
 		}
 		
-		LiveStreamOutput output = new LiveStreamOutput();
-		mAudioEncoder.setOutput(output);
-		mVideoEncoder.setOutput(output);
+		mOutput = new FileStreamOutput();
+		mOutput.open();
+		mAudioEncoder.setOutput(mOutput);
+		mVideoEncoder.setOutput(mOutput);
 		
 		mStartTimeMillis = System.currentTimeMillis();
 		mCountBeginTime = mStartTimeMillis;
@@ -180,6 +182,7 @@ public class LiveMediaRecorder {
 		mCamera.setPreviewCallback(null);
 		mAudioEncoder.close();
 		mVideoEncoder.close();
+		mOutput.close();
 	}
 	
 	public void releaseCamera() {

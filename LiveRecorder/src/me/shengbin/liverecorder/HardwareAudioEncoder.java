@@ -20,7 +20,7 @@ public class HardwareAudioEncoder implements AudioEncoder {
     private MediaCodec.BufferInfo mBufferInfo = new MediaCodec.BufferInfo();
     private ByteBuffer[] mInputBuffers = null, mOutputBuffers = null;
 
-    private LiveStreamOutput mOutput = null;
+    private StreamOutput mOutput = null;
 
     @Override
 	public void open(int sampleRate, int channelCount) {
@@ -96,7 +96,7 @@ public class HardwareAudioEncoder implements AudioEncoder {
 	}
 
 	@Override
-	public void setOutput(LiveStreamOutput output) {
+	public void setOutput(StreamOutput output) {
 		mOutput = output;
 	}
 }
