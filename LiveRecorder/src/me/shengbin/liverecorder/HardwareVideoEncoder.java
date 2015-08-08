@@ -23,7 +23,7 @@ public class HardwareVideoEncoder implements VideoEncoder {
     private MediaCodec.BufferInfo mBufferInfo = new MediaCodec.BufferInfo();
     private ByteBuffer[] mInputBuffers = null, mOutputBuffers = null;
     
-    private LiveStreamOutput mOutput = new LiveStreamOutput();
+    private LiveStreamOutput mOutput = null;
 
     @Override
 	public void open(int width, int height) throws Exception {
@@ -233,5 +233,10 @@ public class HardwareVideoEncoder implements VideoEncoder {
 
         return output;
     }
+
+	@Override
+	public void setOutput(LiveStreamOutput output) {
+		mOutput = output;
+	}
 
 }

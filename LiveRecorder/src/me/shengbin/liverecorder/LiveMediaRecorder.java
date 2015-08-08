@@ -86,6 +86,10 @@ public class LiveMediaRecorder {
 			return;
 		}
 		
+		LiveStreamOutput output = new LiveStreamOutput();
+		mAudioEncoder.setOutput(output);
+		mVideoEncoder.setOutput(output);
+		
 		mStartTimeMillis = System.currentTimeMillis();
 		mCountBeginTime = mStartTimeMillis;
 		
