@@ -42,6 +42,7 @@ int native_encoder_encode(JNIEnv *env, jobject thiz, jbyteArray pixels, jbyteArr
 	uint8_t *frame_buf;
 
 	frame_buf = (uint8_t*) env->GetByteArrayElements(pixels, NULL);
+	x264_picture_init(&pic);
 	pic.img.i_stride[0] = param.i_width;
 	pic.img.i_stride[1] = pic.img.i_stride[2] = param.i_width/2;
 	pic.img.plane[0] = frame_buf;
@@ -92,8 +93,8 @@ int native_encoder_close( )
 
 static JNINativeMethod gMethods[] = {
     {"native_encoder_open", "(II)I", (void *)native_encoder_open},
-    {"native_encoder_encode", "([BJ)I", (void *)native_encoder_encode},
-	{"native_encoder_encoding", "([BJ)I", (void *)native_encoder_encoding}, //todo: fix signature
+    {"native_encoder_encode", "([B[BJ)I", (void *)native_encoder_encode},
+	{"native_encoder_encoding", "([BJ)I", (void *)native_encoder_encoding},
     {"native_encoder_close", "()I", (void *)native_encoder_close},
 };
 
