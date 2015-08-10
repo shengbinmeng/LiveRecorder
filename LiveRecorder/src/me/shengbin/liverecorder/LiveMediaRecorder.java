@@ -87,8 +87,8 @@ public class LiveMediaRecorder {
 			return;
 		}
 		
-		mOutput = new FileStreamOutput();
-		mOutput.open();
+		mOutput = new LiveStreamOutput();
+		mOutput.open("");
 		mAudioEncoder.setOutput(mOutput);
 		mVideoEncoder.setOutput(mOutput);
 		

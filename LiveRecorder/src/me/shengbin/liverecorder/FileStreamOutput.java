@@ -6,17 +6,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import android.media.MediaCodec;
 import android.os.Environment;
 import android.util.Log;
 
 public class FileStreamOutput implements StreamOutput {
 	private static final String TAG = "FileStreamOutput";
 	private OutputStream mVideoOutStream = null, mAudioOutStream = null;
-	public void open() {
-		String sdcardPath = Environment.getExternalStorageDirectory().getPath();
+	public void open(String path) {
+		//String sdcardPath = Environment.getExternalStorageDirectory().getPath();
 		try {
-			mVideoOutStream = new FileOutputStream(new File(sdcardPath + "/video.avc"));
-			mAudioOutStream = new FileOutputStream(new File(sdcardPath + "/audio.aac"));
+			mVideoOutStream = new FileOutputStream(new File(path + "/video.avc"));
+			mAudioOutStream = new FileOutputStream(new File(path + "/audio.aac"));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -24,7 +25,7 @@ public class FileStreamOutput implements StreamOutput {
 	}
 	
 	@Override
-	public void encodedFrameReceived(byte[] data) {
+	public void encodedFrameReceived(byte[] data, MediaCodec.BufferInfo bufferInfo) {
 		Log.d(TAG, "encodedFrameReceived: " + data.length + "bytes.");
 		try {
 			if (mVideoOutStream != null) {
@@ -36,7 +37,7 @@ public class FileStreamOutput implements StreamOutput {
 		}
 	}
 	
-	public void encodedSamplesReceived(byte[] data) {
+	public void encodedSamplesReceived(byte[] data, MediaCodec.BufferInfo bufferInfo) {
 		Log.d(TAG, "encodedSampleReceived: " + data.length + "bytes.");
 		try {
 			if (mAudioOutStream != null) {

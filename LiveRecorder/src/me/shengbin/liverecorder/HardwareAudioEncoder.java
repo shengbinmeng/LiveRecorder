@@ -61,7 +61,7 @@ public class HardwareAudioEncoder implements AudioEncoder {
                 ByteBuffer buffer = mOutputBuffers[outBufferIndex];
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
-                mOutput.encodedSamplesReceived(bytes);
+                mOutput.encodedSamplesReceived(bytes,mBufferInfo);
                 mEncoder.releaseOutputBuffer(outBufferIndex, false);
             } else if (outBufferIndex < 0) {
             	Log.d(TAG, "outBufferIndex negative: " + outBufferIndex);
@@ -80,7 +80,7 @@ public class HardwareAudioEncoder implements AudioEncoder {
                 ByteBuffer buffer = mOutputBuffers[outBufferIndex];
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
-                mOutput.encodedSamplesReceived(bytes);
+                mOutput.encodedSamplesReceived(bytes,mBufferInfo);
                 mEncoder.releaseOutputBuffer(outBufferIndex, false);
                 if ((mBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                 	Log.i(TAG, "End of stream.");
