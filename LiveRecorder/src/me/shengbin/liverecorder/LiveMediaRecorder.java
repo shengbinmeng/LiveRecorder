@@ -78,7 +78,7 @@ public class LiveMediaRecorder {
 		mAudioEncoder = new HardwareAudioEncoder();
 		mAudioEncoder.open(mAudioRecord.getSampleRate(), mAudioRecord.getChannelCount());
 		final Size s = mCamera.getParameters().getPreviewSize();
-		mVideoEncoder = new HardwareVideoEncoder();
+		mVideoEncoder = new SoftwareVideoEncoder();
 		try {
 			mVideoEncoder.open(s.width, s.height);
 		} catch (Exception e) {
