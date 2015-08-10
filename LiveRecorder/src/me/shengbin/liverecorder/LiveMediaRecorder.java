@@ -10,6 +10,7 @@ import android.hardware.Camera.Size;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.os.Environment;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -28,10 +29,7 @@ public class LiveMediaRecorder {
 	
 	private boolean mPrepared = false;
 	private boolean mRecording = false;
-	
-	private VideoEncoder mVideoEncoder = null;
-	private AudioEncoder mAudioEncoder = null;
-	private StreamOutput mOutput = null;
+	private CoreRecorder mCoreRecorder = null;
 	
 	private long mStartTimeMillis = 0;
 	private long mFrameCount = 0;
@@ -69,7 +67,11 @@ public class LiveMediaRecorder {
 		// (better to consider the ratio)
 		LayoutParams params = (LayoutParams) mPreviewHolder.getLayoutParams();
 		mPreview.setDisplaySize(params.width, params.height);
-				
+		
+		mCoreRecorder = new CoreRecorder();
+		mCoreRecorder.configure(sampleRate, 2, 20000, 640, 480, 25, 200000, 
+				Environment.getExternalStorageDirectory().getPath());
+		
 		mPrepared = true;
 	}
 	
@@ -77,30 +79,19 @@ public class LiveMediaRecorder {
 		if (!mPrepared) {
 			return;
 		}
-		
-		// Open encoders
-		mAudioEncoder = new HardwareAudioEncoder();
-		mAudioEncoder.open(mAudioRecord.getSampleRate(), mAudioRecord.getChannelCount());
-		final Size s = mCamera.getParameters().getPreviewSize();
-		mVideoEncoder = new SoftwareVideoEncoder();
-		mVideoEncoder.open(s.width, s.height);
-		
-		mOutput = new LiveStreamOutput();
-		mOutput.open("");
-		mAudioEncoder.setOutput(mOutput);
-		mVideoEncoder.setOutput(mOutput);
+		mCoreRecorder.start();
 		
 		mStartTimeMillis = System.currentTimeMillis();
 		mCountBeginTime = mStartTimeMillis;
-		
 		mRecording = true;
-
+		final Size s = mCamera.getParameters().getPreviewSize();
 		// Start feeding video frame
 		mCamera.setPreviewCallback(new PreviewCallback() {
 			@Override
 			public void onPreviewFrame(byte[] data, Camera cam) {
 				if (mRecording) {
-					videoFrameReceived(data);
+					long pts = (System.currentTimeMillis() - mStartTimeMillis) * 1000;
+					mCoreRecorder.videoFrameReceived(data, pts);
 				}
 				long currentTime = System.currentTimeMillis();
 				mFrameCount += 1;
@@ -151,7 +142,8 @@ public class LiveMediaRecorder {
 					if (bytesRead < 0) {
 						break;
 					}
-					audioSamplesReceived(mAudioBuffer);
+					long pts = (System.currentTimeMillis() - mStartTimeMillis) * 1000;
+					mCoreRecorder.audioSamplesReceived(mAudioBuffer, pts);
 				}
 
 				mAudioRecord.stop();
@@ -161,16 +153,6 @@ public class LiveMediaRecorder {
 			}
 		}
 	};
-		
-	public void videoFrameReceived(byte[] pixels) {
-		long pts = (System.currentTimeMillis() - mStartTimeMillis) * 1000;
-		mVideoEncoder.encode(pixels, pts);
-	}
-	
-	public void audioSamplesReceived(byte[] samples) {
-		long pts = (System.currentTimeMillis() - mStartTimeMillis) * 1000;
-		mAudioEncoder.encode(samples, pts);
-	}
 	
 	public void stop() {
 		mRecording = false;
@@ -181,9 +163,7 @@ public class LiveMediaRecorder {
 			e.printStackTrace();
 		}
 		mCamera.setPreviewCallback(null);
-		mAudioEncoder.close();
-		mVideoEncoder.close();
-		mOutput.close();
+		mCoreRecorder.stop();
 	}
 	
 	public void releaseCamera() {

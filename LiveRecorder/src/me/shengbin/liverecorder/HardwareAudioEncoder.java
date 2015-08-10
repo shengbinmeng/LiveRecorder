@@ -12,7 +12,6 @@ public class HardwareAudioEncoder implements AudioEncoder {
 	private static final String TAG = "HardwareAudioEncoder";
 	
 	private static final String MIMETYPE_AUDIO_AAC = "audio/mp4a-latm"; // This is AAC
-    private static final int BIT_RATE = 20000; // 20 kbps
     private static final int TIMEOUT_INPUT = 2000000; // 2s
     private static final int TIMEOUT_OUTPUT = 20000; // 20ms
     
@@ -23,9 +22,9 @@ public class HardwareAudioEncoder implements AudioEncoder {
     private StreamOutput mOutput = null;
 
     @Override
-	public void open(int sampleRate, int channelCount) {
+	public void open(int sampleRate, int channelCount, int bitrate) {
 		MediaFormat format = MediaFormat.createAudioFormat(MIMETYPE_AUDIO_AAC, sampleRate, channelCount);
-        format.setInteger(MediaFormat.KEY_BIT_RATE, BIT_RATE);
+        format.setInteger(MediaFormat.KEY_BIT_RATE, bitrate);
 		int bufferSize = AudioRecord.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_IN_STEREO,
         		AudioFormat.ENCODING_PCM_16BIT);
         format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, bufferSize);

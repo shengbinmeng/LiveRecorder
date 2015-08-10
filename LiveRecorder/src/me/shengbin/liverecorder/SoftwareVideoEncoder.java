@@ -13,7 +13,7 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 	private native int native_encoder_close();
 	
 	@Override
-	public void open(int width, int height) throws Exception {
+	public void open(int width, int height, int frameRate, int bitrate) throws Exception {
 		native_encoder_open(width, height);
 	}
 

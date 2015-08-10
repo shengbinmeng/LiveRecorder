@@ -12,9 +12,7 @@ public class HardwareVideoEncoder implements VideoEncoder {
 	private static final String TAG = "HardwareVideoEncoder";
 			
 	private static final String MIMETYPE_VIDEO_AVC = "video/avc"; // H.264 Advanced Video Coding
-    private static final int FRAME_RATE = 30; // 30fps
     private static final int IFRAME_INTERVAL = 5; // 5 seconds between I-frames
-    private static final int BIT_RATE = 200000; // 200 kbps
     private static final int TIMEOUT_INPUT = 2000000; // 2s
     private static final int TIMEOUT_OUTPUT = 20000; // 20ms
     
@@ -26,7 +24,7 @@ public class HardwareVideoEncoder implements VideoEncoder {
     private StreamOutput mOutput = null;
 
     @Override
-	public void open(int width, int height) throws Exception {
+	public void open(int width, int height, int frameRate, int bitrate) throws Exception {
     	MediaCodecInfo codecInfo = selectCodec(MIMETYPE_VIDEO_AVC);
     	if (codecInfo == null) {
     		Log.e(TAG, "Couldn't find encoder for " + MIMETYPE_VIDEO_AVC);
@@ -39,8 +37,8 @@ public class HardwareVideoEncoder implements VideoEncoder {
     	
 		MediaFormat format = MediaFormat.createVideoFormat(MIMETYPE_VIDEO_AVC, width, height);
 		format.setInteger(MediaFormat.KEY_COLOR_FORMAT, colorFormat);
-        format.setInteger(MediaFormat.KEY_BIT_RATE, BIT_RATE);
-        format.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE);
+        format.setInteger(MediaFormat.KEY_FRAME_RATE, frameRate);
+        format.setInteger(MediaFormat.KEY_BIT_RATE, bitrate);
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, IFRAME_INTERVAL);
         
         mEncoder = MediaCodec.createByCodecName(codecInfo.getName());
