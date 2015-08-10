@@ -8,7 +8,8 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 	}
 	
 	private native int native_encoder_open(int width, int height);
-	private native int native_encoder_encode(byte[] data, long pts);
+	private native int native_encoder_encode(byte[] data, byte[] out, long pts);
+	private native int native_encoder_encoding(byte[] out, long pts);
 	private native int native_encoder_close();
 	
 	@Override
@@ -18,11 +19,25 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 
 	@Override
 	public void encode(byte[] data, long presentationTimeUs) {
-		native_encoder_encode(data, presentationTimeUs);
+		byte[] out = null;
+		int rv = native_encoder_encode(data, out, presentationTimeUs);
+		
+		if (rv < 0) {
+			//error handling
+		} else if (rv > 0) {
+			//output bitstream.
+		}
 	}
 
 	@Override
 	public void close() {
+		int presentationTimeUs = 0;
+		byte[] out = null;
+		
+		while ((native_encoder_encoding(out, presentationTimeUs)) > 0) {
+			//output bitstream.
+		}
+		
 		native_encoder_close();
 	}
 
