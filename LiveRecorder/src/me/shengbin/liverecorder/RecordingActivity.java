@@ -7,10 +7,11 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class RecordingActivity extends Activity {
+public class RecordingActivity extends Activity implements LiveMediaRecorder.Callback {
 
 	TextView mInfoText = null;
 	Button mControlButton = null;
@@ -26,7 +27,9 @@ public class RecordingActivity extends Activity {
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		setContentView(R.layout.activity_recording);
-		mRecorder = new LiveMediaRecorder(this);
+		FrameLayout cameraPreview = (FrameLayout) findViewById(R.id.camera_preview);
+		mRecorder = new LiveMediaRecorder(this, cameraPreview);
+		mRecorder.addCallback(this);
 		mRecorder.open();
 		
 		setupControl();
@@ -117,5 +120,10 @@ public class RecordingActivity extends Activity {
 		}
 		// release the camera immediately on pause event, so other apps can use it
 		mRecorder.releaseCamera();
+	}
+
+	@Override
+	public void statusUpdated(String info, LiveMediaRecorder recorder) {
+		mInfoText.setText(info);
 	}
 }

@@ -1,5 +1,6 @@
 package me.shengbin.liverecorder;
 
+import java.util.ArrayList;
 import java.util.Locale;
 
 import android.app.Activity;
@@ -10,15 +11,16 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
+import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.FrameLayout;
 
 public class LiveMediaRecorder {
 	private static final String TAG = "LiveMediaRecorder";
 	private Activity mActivity = null;
-	
 	private Camera mCamera = null;
 	private CameraPreview mPreview = null;
+	private ViewGroup mPreviewHolder = null;
+	private ArrayList<Callback> mCallbackList = null;
 	
 	private AudioRecord mAudioRecord = null;
 	private byte[] mAudioBuffer = null;
@@ -35,8 +37,10 @@ public class LiveMediaRecorder {
 	private long mFrameCount = 0;
 	private long mCountBeginTime = 0;
 	
-	LiveMediaRecorder(Activity activity) {
+	LiveMediaRecorder(Activity activity, ViewGroup previewHolder) {
 		mActivity = activity;
+		mPreviewHolder = previewHolder;
+		mCallbackList = new ArrayList<Callback>();
 	}
 	
 	public void open() {
@@ -58,12 +62,11 @@ public class LiveMediaRecorder {
 		}
 		// Create our Preview view and set it as the content of our activity.
 		mPreview = new CameraPreview(mActivity, mCamera);
-		FrameLayout preview = (FrameLayout) mActivity.findViewById(R.id.camera_preview);
-		preview.addView(mPreview);
+		mPreviewHolder.addView(mPreview);
 
 		// set display size to the size of our frame layout, i.e. full screen
 		// (better to consider the ratio)
-		LayoutParams params = (LayoutParams) preview.getLayoutParams();
+		LayoutParams params = (LayoutParams) mPreviewHolder.getLayoutParams();
 		mPreview.setDisplaySize(params.width, params.height);
 				
 		mPrepared = true;
@@ -110,10 +113,13 @@ public class LiveMediaRecorder {
 				if (currentTime - mCountBeginTime > 1000) {
 					double fps = mFrameCount / ((currentTime - mCountBeginTime)/1000.0);
 					String info = String.format(Locale.ENGLISH, "Video size: %dx%d, FPS: %.2f", s.width, s.height, fps);
-					((RecordingActivity)mActivity).updateInfoText(info);
 					Log.i(TAG, info);
 					mCountBeginTime = currentTime;
 					mFrameCount = 0;
+					
+					for (Callback callback : mCallbackList) {
+						callback.statusUpdated(info, LiveMediaRecorder.this);
+					}
 				}
 			}
 		});
@@ -202,5 +208,17 @@ public class LiveMediaRecorder {
 	
 	public boolean isRecording() {
 		return mRecording;
+	}
+	
+	public static interface Callback {
+		void statusUpdated(String info, LiveMediaRecorder recorder);
+	}
+	
+	public void addCallback(Callback cb) {
+		mCallbackList.add(cb);
+	}
+	
+	public void removeCallback(Callback cb) {
+		mCallbackList.remove(cb);
 	}
 }
