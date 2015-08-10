@@ -77,13 +77,13 @@ public class HardwareVideoEncoder implements VideoEncoder {
      */
     private static int selectColorFormat(MediaCodecInfo codecInfo, String mimeType) {
         MediaCodecInfo.CodecCapabilities capabilities = codecInfo.getCapabilitiesForType(mimeType);
-        int selected = Integer.MAX_VALUE;
+        int selected = 0;
         for (int i = 0; i < capabilities.colorFormats.length; i++) {
             int colorFormat = capabilities.colorFormats[i];
             if (!isRecognizedFormat(colorFormat)) {
             	continue;
             }
-            if (colorFormat < selected) {
+            if (colorFormat > selected) {
             	selected = colorFormat;
             }
         }
