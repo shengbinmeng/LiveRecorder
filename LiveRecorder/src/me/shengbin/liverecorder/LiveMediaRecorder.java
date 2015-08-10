@@ -43,28 +43,29 @@ public class LiveMediaRecorder {
 		mCallbackList = new ArrayList<Callback>();
 	}
 	
-	public void open() {
-		// audio parameters are set here
+	public void open() throws Exception {
+		// Audio parameters are set here
 		int sampleRate = 44100;
 		int channelConfig = AudioFormat.CHANNEL_IN_STEREO;
 		int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
 		int bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig,
 				audioFormat);
-		//mAudioBuffer = new byte[Math.min(4096, bufferSize)];
 		mAudioBuffer = new byte[bufferSize];
 		mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.DEFAULT,
 				sampleRate, channelConfig, audioFormat, bufferSize);
-		
+		if (mAudioRecord == null) {
+			throw new Exception("Prepare audio source failed.");
+		}
 		// Create an instance of Camera
 		mCamera = getCameraInstance();
 		if (mCamera == null) {
-			return;
+			throw new Exception("Prepare video source failed. Can not get camera instance.");
 		}
 		// Create our Preview view and set it as the content of our activity.
 		mPreview = new CameraPreview(mActivity, mCamera);
 		mPreviewHolder.addView(mPreview);
 
-		// set display size to the size of our frame layout, i.e. full screen
+		// Set display size to the size of our frame layout, i.e. full screen
 		// (better to consider the ratio)
 		LayoutParams params = (LayoutParams) mPreviewHolder.getLayoutParams();
 		mPreview.setDisplaySize(params.width, params.height);
@@ -72,23 +73,17 @@ public class LiveMediaRecorder {
 		mPrepared = true;
 	}
 	
-	public void start() {
+	public void start() throws Exception {
 		if (!mPrepared) {
 			return;
 		}
 		
-		// open encoders
+		// Open encoders
 		mAudioEncoder = new HardwareAudioEncoder();
 		mAudioEncoder.open(mAudioRecord.getSampleRate(), mAudioRecord.getChannelCount());
 		final Size s = mCamera.getParameters().getPreviewSize();
 		mVideoEncoder = new SoftwareVideoEncoder();
-		try {
-			mVideoEncoder.open(s.width, s.height);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return;
-		}
+		mVideoEncoder.open(s.width, s.height);
 		
 		mOutput = new LiveStreamOutput();
 		mOutput.open("");
@@ -100,7 +95,7 @@ public class LiveMediaRecorder {
 		
 		mRecording = true;
 
-		// start feeding video frame
+		// Start feeding video frame
 		mCamera.setPreviewCallback(new PreviewCallback() {
 			@Override
 			public void onPreviewFrame(byte[] data, Camera cam) {
@@ -109,10 +104,10 @@ public class LiveMediaRecorder {
 				}
 				long currentTime = System.currentTimeMillis();
 				mFrameCount += 1;
-				// update FPS every 1000ms (i.e. 1s)
+				// Update FPS every 1000ms (i.e. 1s)
 				if (currentTime - mCountBeginTime > 1000) {
 					double fps = mFrameCount / ((currentTime - mCountBeginTime)/1000.0);
-					String info = String.format(Locale.ENGLISH, "Video size: %dx%d, FPS: %.2f", s.width, s.height, fps);
+					String info = String.format(Locale.ENGLISH, mActivity.getResources().getString(R.string.video_size) + ": %dx%d, " + mActivity.getResources().getString(R.string.frame_rate) + ": %.2f FPS", s.width, s.height, fps);
 					Log.i(TAG, info);
 					mCountBeginTime = currentTime;
 					mFrameCount = 0;
@@ -124,12 +119,12 @@ public class LiveMediaRecorder {
 			}
 		});
 
-		// start audio recording
+		// Start audio recording
 		mAudioThread = new AudioRecordThread();
 		mAudioThread.start();
 	}
 	
-	// attempt to get a Camera instance
+	// Attempt to get a Camera instance
 	private Camera getCameraInstance() {
 		Camera c = null;
 		try {

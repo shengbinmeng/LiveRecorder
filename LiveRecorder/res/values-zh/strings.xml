@@ -4,12 +4,19 @@
     <string name="app_name">直播录像</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">设置</string>
-    <string name="start_recording">开始录像</string>
+    <string name="launch_recording">启动录像</string>
     <string name="action_about">关于</string>
     <string name="about_title">关于此应用</string>
     <string name="about_message">此应用是直播录像的演示程序。相关问题可联系：shengbinmeng@gmail.com。</string>
     <string name="placeholder">这是一些文字。</string>
     <string name="stop">停止</string>
     <string name="start">开始</string>
+    <string name="error">错误</string>
+    <string name="open_failed">打开录像失败。 </string>
+    <string name="start_failed">开始录像失败。 </string>
+    <string name="information">信息</string>
+    <string name="please_wait">请稍后&#8230;</string>
+    <string name="video_size">视频大小</string>
+    <string name="frame_rate">帧率</string>
     
 </resources>

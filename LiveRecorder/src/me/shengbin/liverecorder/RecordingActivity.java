@@ -1,6 +1,7 @@
 package me.shengbin.liverecorder;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.view.View;
@@ -27,50 +28,65 @@ public class RecordingActivity extends Activity implements LiveMediaRecorder.Cal
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		setContentView(R.layout.activity_recording);
-		FrameLayout cameraPreview = (FrameLayout) findViewById(R.id.camera_preview);
-		mRecorder = new LiveMediaRecorder(this, cameraPreview);
-		mRecorder.addCallback(this);
-		mRecorder.open();
 		
-		setupControl();
-	}
-	
-	private void setupControl() {
-		RelativeLayout layoutText = (RelativeLayout) findViewById(R.id.layout_text);
-		layoutText.bringToFront();
-		RelativeLayout layoutButton = (RelativeLayout) findViewById(R.id.layout_button);
-		layoutButton.bringToFront();
 		mInfoText = (TextView) findViewById(R.id.text_info);
 		mInfoText.setText("");
 		mInfoText.setTextSize(32);
 		mControlButton = (Button) findViewById(R.id.button_control);
-		
 		mControlButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
 				if (mRecorder.isRecording()) {
-					// only show the dialog when user clicks the Stop button;
-					// when stop in other case (e.g. Home or Back or interrupt), user won't be able to see it
-					mProgressDlg = ProgressDialog.show(RecordingActivity.this, "Please wait", "Stopping......");
+					// Only show the dialog when user clicks the Stop button;
+					// When stop in other case (e.g. Home or Back or interrupt), user won't be able to see it
+					mProgressDlg = ProgressDialog.show(RecordingActivity.this, getResources().getString(R.string.information), getResources().getString(R.string.please_wait));
 					stopRecording();
 				} else {
 					startRecording();
 				}
 			}
 		});
+
+		FrameLayout cameraPreview = (FrameLayout) findViewById(R.id.camera_preview);
+		mRecorder = new LiveMediaRecorder(this, cameraPreview);
+		mRecorder.addCallback(this);
+		try {
+			mRecorder.open();
+		} catch (Exception e) {
+			e.printStackTrace();
+			showAlert(getResources().getString(R.string.error), getResources().getString(R.string.open_failed) + e.getLocalizedMessage());
+		}
+		
+		// Text and button will be covered by the preview, need to bring them to front.
+		RelativeLayout layoutText = (RelativeLayout) findViewById(R.id.layout_text);
+		layoutText.bringToFront();
+		RelativeLayout layoutButton = (RelativeLayout) findViewById(R.id.layout_button);
+		layoutButton.bringToFront();
+	}
+	
+	private void showAlert(String title, String message) {
+		new AlertDialog.Builder(this).setTitle(title).setMessage(message)
+		.setCancelable(false)
+		.setPositiveButton(android.R.string.ok, null).show();
+		mControlButton.setEnabled(false);
 	}
 	
 	private void startRecording() {
-		// start the recorder
-		mRecorder.start();
+		// Start the recorder
+		try {
+			mRecorder.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+			showAlert(getResources().getString(R.string.error), getResources().getString(R.string.start_failed) + e.getLocalizedMessage());
+		}
 		if (mRecorder.isRecording()) {
 			mControlButton.setText(R.string.stop);
 		}
 	}
 	
 	private void stopRecording() {
-		// stop the recorder
-		// we need to start a new thread to do this, because:
+		// Stop the recorder
+		// We need to start a new thread to do this, because:
 		// during closing, it will take a while to flush the delayed frames,
 		// if it's executed in the main UI thread, the progress dialog won't show
 		new Thread(){
@@ -118,7 +134,7 @@ public class RecordingActivity extends Activity implements LiveMediaRecorder.Cal
 			mInfoText.setText("");
 			mControlButton.setText(R.string.start);
 		}
-		// release the camera immediately on pause event, so other apps can use it
+		// Release the camera immediately on pause event, so other apps can use it
 		mRecorder.releaseCamera();
 	}
 
