@@ -3,6 +3,7 @@ package me.shengbin.liverecorder;
 public class SoftwareVideoEncoder implements VideoEncoder {
 
 	static {
+		System.loadLibrary("x264");
 		System.loadLibrary("native_encoder");
 	}
 	
