@@ -12,7 +12,7 @@ public class HardwareVideoEncoder implements VideoEncoder {
 	private static final String TAG = "HardwareVideoEncoder";
 			
 	private static final String MIMETYPE_VIDEO_AVC = "video/avc"; // H.264 Advanced Video Coding
-    private static final int IFRAME_INTERVAL = 5; // 5 seconds between I-frames
+    private static final int IFRAME_INTERVAL = 2; // 2 seconds between I-frames
     private static final int TIMEOUT_INPUT = 2000000; // 2s
     private static final int TIMEOUT_OUTPUT = 20000; // 20ms
     
@@ -101,7 +101,7 @@ public class HardwareVideoEncoder implements VideoEncoder {
      */
     private static boolean isRecognizedFormat(int colorFormat) {
         switch (colorFormat) {
-            // these are the formats we know how to handle for this test
+            // These are the formats we know how to handle.
             case MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar: // 19
             case MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420PackedPlanar: // 20
             case MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar: // 21
@@ -140,7 +140,7 @@ public class HardwareVideoEncoder implements VideoEncoder {
 		}
 		mInputBuffers = mEncoder.getInputBuffers();
 		mOutputBuffers = mEncoder.getOutputBuffers();
-        // Feed in frame data
+        // Feed in frame data.
         while (true) {
             int inBufferIndex = mEncoder.dequeueInputBuffer(TIMEOUT_INPUT);
             if (inBufferIndex >= 0) {
@@ -161,7 +161,7 @@ public class HardwareVideoEncoder implements VideoEncoder {
             }
         }
         
-        // Get out stream
+        // Get the stream out.
         while (true) {
             int outBufferIndex = mEncoder.dequeueOutputBuffer(mBufferInfo, TIMEOUT_OUTPUT);
             if (outBufferIndex >= 0) {
@@ -209,7 +209,7 @@ public class HardwareVideoEncoder implements VideoEncoder {
 		mEncoder.release();
 	}
 
-	// the color transform, @see http://stackoverflow.com/questions/15739684/mediacodec-and-camera-color-space-incorrect
+	// Color format conversion; @see http://stackoverflow.com/questions/15739684/mediacodec-and-camera-color-space-incorrect.
 	private static byte[] YV12toYUV420PackedSemiPlanar(final byte[] input, final byte[] output, final int width, final int height) {
         /*
          * COLOR_TI_FormatYUV420PackedSemiPlanar is NV12

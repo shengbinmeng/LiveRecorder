@@ -11,7 +11,6 @@ import android.hardware.Camera.Size;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
-import android.os.Environment;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -43,7 +42,7 @@ public class LiveMediaRecorder {
 	}
 	
 	public void open() throws Exception {
-		// Audio parameters are set here
+		// Audio parameters are set here.
 		int sampleRate = 44100;
 		int channelConfig = AudioFormat.CHANNEL_IN_STEREO;
 		int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
@@ -55,7 +54,7 @@ public class LiveMediaRecorder {
 		if (mAudioRecord == null) {
 			throw new Exception("Prepare audio source failed.");
 		}
-		// Create an instance of Camera
+		// Create an instance of Camera.
 		mCamera = getCameraInstance();
 		if (mCamera == null) {
 			throw new Exception("Prepare video source failed. Can not get camera instance.");
@@ -64,14 +63,13 @@ public class LiveMediaRecorder {
 		mPreview = new CameraPreview(mActivity, mCamera);
 		mPreviewHolder.addView(mPreview);
 
-		// Set display size to the size of our frame layout, i.e. full screen
-		// (better to consider the ratio)
+		// Set display size to the size of our frame layout, i.e. full screen.
+		// TODO: Consider the ratio.
 		LayoutParams params = (LayoutParams) mPreviewHolder.getLayoutParams();
 		mPreview.setDisplaySize(params.width, params.height);
 		
 		mCoreRecorder = new CoreRecorder();
-		mCoreRecorder.configure(sampleRate, 2, 20000, 640, 480, 25, 200000, 
-				Environment.getExternalStorageDirectory().getPath());
+		mCoreRecorder.configure(sampleRate, 2, 20000, 640, 480, 25, 200000, "rtmp://123.56.150.52/origin/test");
 		
 		mPrepared = true;
 	}
@@ -86,7 +84,7 @@ public class LiveMediaRecorder {
 		mCountBeginTime = mStartTimeMillis;
 		mRecording = true;
 		final Size s = mCamera.getParameters().getPreviewSize();
-		// Start feeding video frame
+		// Start feeding video frame.
 		mCamera.setPreviewCallback(new PreviewCallback() {
 			@Override
 			public void onPreviewFrame(byte[] data, Camera cam) {
@@ -96,7 +94,7 @@ public class LiveMediaRecorder {
 				}
 				long currentTime = System.currentTimeMillis();
 				mFrameCount += 1;
-				// Update FPS every 1000ms (i.e. 1s)
+				// Update FPS every 1000ms (i.e. 1s).
 				if (currentTime - mCountBeginTime > 1000) {
 					double fps = mFrameCount / ((currentTime - mCountBeginTime)/1000.0);
 					String info = String.format(Locale.ENGLISH, mActivity.getResources().getString(R.string.video_size) + ": %dx%d, " + mActivity.getResources().getString(R.string.frame_rate) + ": %.2f FPS", s.width, s.height, fps);
@@ -112,18 +110,18 @@ public class LiveMediaRecorder {
 			}
 		});
 
-		// Start audio recording
+		// Start audio recording.
 		mAudioThread = new AudioRecordThread();
 		mAudioThread.start();
 	}
 	
-	// Attempt to get a Camera instance
+	// Attempt to get a Camera instance.
 	private Camera getCameraInstance() {
 		Camera c = null;
 		try {
 			c = Camera.open();
 		} catch (Exception e) {
-			// Camera is not available (in use or does not exist)
+			// Camera is not available (in use or does not exist).
 			e.printStackTrace();
 		}
 		return c;
@@ -131,7 +129,7 @@ public class LiveMediaRecorder {
 		
 	/**
 	 * A new thread will be started for the audio recording.
-	 * Because a while loop is needed to continually supply the audio data to recorder
+	 * Because a while loop is needed to continually supply the audio data to recorder.
 	 */
 	class AudioRecordThread extends Thread {
 		public void run() {
@@ -158,7 +156,6 @@ public class LiveMediaRecorder {
 	
 	public void stop() {
 		mRecording = false;
-		// wait the audio thread to end before close native recorder
 		try {
 			mAudioThread.join();
 		} catch (InterruptedException e) {
@@ -170,14 +167,14 @@ public class LiveMediaRecorder {
 	
 	public void releaseCamera() {
 		if (mCamera != null) {
-			mCamera.release(); // release the camera for other applications
+			// Release the camera for other applications.
+			mCamera.release();
 			mCamera = null;
 		}
 	}
 	
 	public void recoverCamera() {
 		if (mCamera == null && mPreview != null) {
-			// Create an instance of Camera
 			mCamera = getCameraInstance();
 			mPreview.setCamera(mCamera);
 		}

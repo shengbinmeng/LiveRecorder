@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 
 import android.media.MediaCodec;
 import android.util.Log;
@@ -39,7 +38,7 @@ public class FileStreamOutput implements StreamOutput {
 	}
 	
 	public void encodedSamplesReceived(byte[] data, MediaCodec.BufferInfo bufferInfo) {
-		Log.d(TAG, "encodedSampleReceived: " + data.length + "bytes.");
+		Log.d(TAG, "encodedSamplesReceived: " + data.length + "bytes.");
 		try {
 			if (mAudioOutStream != null) {
 				mAudioOutStream.write(data);

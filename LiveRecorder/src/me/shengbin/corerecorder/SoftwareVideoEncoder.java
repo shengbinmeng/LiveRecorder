@@ -24,7 +24,6 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 	@Override
 	public void open(int width, int height, int frameRate, int bitrate) throws Exception {
 		int rv = native_encoder_open(width, height, bitrate);
-		
 		if (rv < 0) {
 			
 		}
@@ -34,37 +33,34 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 	public void encode(byte[] data, long presentationTimeUs) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream(0);
 		long[] frameEncapsulation = new long[3];
-		//todo: judge and convert input color format.
 		int rv = native_encoder_encode(data, out, presentationTimeUs, frameEncapsulation);
-		
 		if (rv < 0) {
-			//error handling
-			Log.d(TAG, "Software encoder error,rv = " + rv);
+			// Error handling.
+			Log.e(TAG, "Software encoder error, rv = " + rv);
 			close();
 		} else if (rv > 0) {
-			//output bitstream.
+			// Output bitstream.
 			byte[] outBytes = out.toByteArray();
 			long pts = frameEncapsulation[0];
 			int boolKeyFrame = (int) frameEncapsulation[1];
 			int flag = 0;
 			
-			if (boolKeyFrame == 1)
+			if (boolKeyFrame == 1) {
 				flag |= BUFFER_FLAG_KEY_FRAME;
-			mBufferInfo.set(0, rv, pts, flag);//todo: how to judge BUFFER_FLAG_END_OF_STREAM.
-			mOutput.encodedFrameReceived(outBytes,mBufferInfo);
+			}
+			mBufferInfo.set(0, rv, pts, flag);
+			//TODO: Decide and set BUFFER_FLAG_END_OF_STREAM.
+			mOutput.encodedFrameReceived(outBytes, mBufferInfo);
 		}
 	}
 
 	@Override
 	public void close() {
-		int presentationTimeUs = 0;//test
-		
-		//flush encoder.
+		int presentationTimeUs = 0;
+		// Flush encoder.
 		while (native_encoder_encoding() == 1) {
-			//output bitstream.
 			encode(null, presentationTimeUs);
 		}
-		
 		native_encoder_close();
 	}
 

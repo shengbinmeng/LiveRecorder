@@ -18,7 +18,7 @@ public class CoreRecorder {
 	private String mOutputAddress = null;
 	
 	public CoreRecorder () {
-		// Default values
+		// These are default values.
 		mSampleRate = 44100;
 		mChannelCount = 2;
 		mAudioBitrate = 20000;
@@ -59,7 +59,7 @@ public class CoreRecorder {
 		mVideoEncoder = new HardwareVideoEncoder();
 		mVideoEncoder.open(mWidth, mHeight, mFrameRate, mVideoBitrate);
 		mOutput = new LiveStreamOutput();
-		mOutput.open("rtmp://123.56.150.52/origin/test");
+		mOutput.open(mOutputAddress);
 		mAudioEncoder.setOutput(mOutput);
 		mVideoEncoder.setOutput(mOutput);
 	}
@@ -80,20 +80,20 @@ public class CoreRecorder {
 	
 	
 	private void processFrame(byte[] data, long pts) {
-		//TODO: other processing
+		// We can do other processing here before encode.
 		mVideoEncoder.encode(data, pts);
 	}
 	
 	private void processSamples(byte[] data, long pts) {
-		//TODO: other processing
+		// We can do other processing here before encode.
 		mAudioEncoder.encode(data, pts);
 	}
 	
-	public void adjustBitrate(int bitrate) throws Exception {
+	public void restartWithBitrate(int bitrate) throws Exception {
 		stop();
 		mVideoBitrate = bitrate * 8/10;
 		mAudioBitrate = bitrate * 1/10;
-		Log.i(TAG, "vb: " + mVideoBitrate + ", ab: " + mAudioBitrate);
 		start();
+		Log.i(TAG, "Restarted with vide bitrate: " + mVideoBitrate + ", and audio bitrate: " + mAudioBitrate);
 	}	
 }

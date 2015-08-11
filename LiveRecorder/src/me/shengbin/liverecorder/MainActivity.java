@@ -17,8 +17,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // add the button listener
-        Button loginButton = (Button) this.findViewById(R.id.button_start);
+        Button loginButton = (Button) this.findViewById(R.id.button_launch);
         loginButton.setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View v) {

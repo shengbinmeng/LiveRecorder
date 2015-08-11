@@ -42,7 +42,7 @@ public class HardwareAudioEncoder implements AudioEncoder {
 		}
 		mInputBuffers = mEncoder.getInputBuffers();
         mOutputBuffers = mEncoder.getOutputBuffers();
-        // Feed in samples data
+        // Feed in samples data.
         while (true) {
             int inBufferIndex = mEncoder.dequeueInputBuffer(TIMEOUT_INPUT);
             if (inBufferIndex >= 0) {
@@ -56,7 +56,7 @@ public class HardwareAudioEncoder implements AudioEncoder {
             }
         }
         
-        // Get out stream
+        // Get the stream out.
         while (true) {
             int outBufferIndex = mEncoder.dequeueOutputBuffer(mBufferInfo, TIMEOUT_OUTPUT);
             if (outBufferIndex >= 0) {

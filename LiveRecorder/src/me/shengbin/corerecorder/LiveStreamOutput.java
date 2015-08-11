@@ -43,7 +43,7 @@ public class LiveStreamOutput implements StreamOutput {
 	
 	@Override
 	public void encodedSamplesReceived(byte[] data, MediaCodec.BufferInfo bufferInfo) {
-		Log.d(TAG, "encodedSampleReceived: " + data.length + "bytes.");
+		Log.d(TAG, "encodedSamplesReceived: " + data.length + "bytes.");
 		ByteBuffer byteBuf = ByteBuffer.allocate(data.length);
 		byteBuf.put(data);
 		try {
@@ -56,8 +56,7 @@ public class LiveStreamOutput implements StreamOutput {
 
 	@Override
 	public void close() {
-		if(muxer != null)
-		{
+		if (muxer != null) {
 			muxer.stop();
 			muxer.release();
 		}

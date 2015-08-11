@@ -38,7 +38,7 @@ public class RecordingActivity extends Activity implements LiveMediaRecorder.Cal
 			public void onClick(View arg0) {
 				if (mRecorder.isRecording()) {
 					// Only show the dialog when user clicks the Stop button;
-					// When stop in other case (e.g. Home or Back or interrupt), user won't be able to see it
+					// When stop in other case (e.g. Home or Back or interrupt), user won't be able to see it.
 					mProgressDlg = ProgressDialog.show(RecordingActivity.this, getResources().getString(R.string.information), getResources().getString(R.string.please_wait));
 					stopRecording();
 				} else {
@@ -72,7 +72,6 @@ public class RecordingActivity extends Activity implements LiveMediaRecorder.Cal
 	}
 	
 	private void startRecording() {
-		// Start the recorder
 		try {
 			mRecorder.start();
 		} catch (Exception e) {
@@ -85,15 +84,14 @@ public class RecordingActivity extends Activity implements LiveMediaRecorder.Cal
 	}
 	
 	private void stopRecording() {
-		// Stop the recorder
 		// We need to start a new thread to do this, because:
 		// during closing, it will take a while to flush the delayed frames,
-		// if it's executed in the main UI thread, the progress dialog won't show
+		// if it's executed in the main UI thread, the progress dialog won't show.
 		new Thread(){
 			public void run(){
 				mRecorder.stop();
 				try {
-					// Make the dialog be seen
+					// Make the dialog be seen.
 					sleep(1000);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
@@ -134,7 +132,7 @@ public class RecordingActivity extends Activity implements LiveMediaRecorder.Cal
 			mInfoText.setText("");
 			mControlButton.setText(R.string.start);
 		}
-		// Release the camera immediately on pause event, so other apps can use it
+		// Release the camera immediately on pause event, so other apps can use it.
 		mRecorder.releaseCamera();
 	}
 
