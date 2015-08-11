@@ -11,7 +11,7 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 		System.loadLibrary("native_encoder");
 	}
 	private static final String TAG = "SoftwareVideoEncoder";
-	private native int native_encoder_open(int width, int height);
+	private native int native_encoder_open(int width, int height, int bitrate);
 	private native int native_encoder_encode(byte[] data, ByteArrayOutputStream out, long pts, long[] frameEncapsulation);
 	private native int native_encoder_encoding();
 	private native int native_encoder_close();
@@ -23,7 +23,7 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 	
 	@Override
 	public void open(int width, int height, int frameRate, int bitrate) throws Exception {
-		int rv = native_encoder_open(width, height);
+		int rv = native_encoder_open(width, height, bitrate);
 		
 		if (rv < 0) {
 			

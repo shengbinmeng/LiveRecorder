@@ -15,9 +15,9 @@ static int bitstream_outputed = 0;
 static int b_entered = 0;
 
 #define OUTPUT_YUV 0
-#define OUTPUT_BS 1
+#define OUTPUT_BS 0
 
-int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height)
+int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height, jint bitrate)
 {
 	LOGD("open encoder \n");
 
@@ -239,7 +239,7 @@ int native_encoder_close()
 }
 
 static JNINativeMethod gMethods[] = {
-    {"native_encoder_open", "(II)I", (void *)native_encoder_open},
+    {"native_encoder_open", "(III)I", (void *)native_encoder_open},
     {"native_encoder_encode", "([BLjava/io/ByteArrayOutputStream;J[J)I", (void *)native_encoder_encode},
 	{"native_encoder_encoding", "()I", (void *)native_encoder_encoding},
     {"native_encoder_close", "()I", (void *)native_encoder_close},
