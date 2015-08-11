@@ -20,7 +20,7 @@ public class HardwareVideoEncoder implements VideoEncoder {
     private int mWidth = 0, mHeight = 0, mColorFormat = 0;
     private MediaCodec.BufferInfo mBufferInfo = new MediaCodec.BufferInfo();
     private ByteBuffer[] mInputBuffers = null, mOutputBuffers = null;
-    
+    private boolean mEncoding = false;
     private StreamOutput mOutput = null;
 
     @Override
@@ -47,6 +47,7 @@ public class HardwareVideoEncoder implements VideoEncoder {
         mWidth = width;
         mHeight = height;
         mColorFormat = colorFormat;
+        mEncoding = true;
 	}
     
     /**
@@ -134,9 +135,11 @@ public class HardwareVideoEncoder implements VideoEncoder {
 
 	@Override
 	public void encode(byte[] data, long pts) {
+		if (!mEncoding) {
+			return;
+		}
 		mInputBuffers = mEncoder.getInputBuffers();
 		mOutputBuffers = mEncoder.getOutputBuffers();
-        
         // Feed in frame data
         while (true) {
             int inBufferIndex = mEncoder.dequeueInputBuffer(TIMEOUT_INPUT);
@@ -176,6 +179,13 @@ public class HardwareVideoEncoder implements VideoEncoder {
 
 	@Override
 	public void close() {
+		if (!mEncoding) {
+			return;
+		}
+		mEncoding = false;
+		
+		mInputBuffers = mEncoder.getInputBuffers();
+		mOutputBuffers = mEncoder.getOutputBuffers();
 		int inBufferIndex = mEncoder.dequeueInputBuffer(TIMEOUT_INPUT);
 		mEncoder.queueInputBuffer(inBufferIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
 		while (true) {

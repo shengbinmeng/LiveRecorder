@@ -71,10 +71,30 @@ public class CoreRecorder {
 	}
 		
 	public void videoFrameReceived(byte[] pixels, long pts) {
-		mVideoEncoder.encode(pixels, pts);
+		processFrame(pixels, pts);
 	}
 	
 	public void audioSamplesReceived(byte[] samples, long pts) {
-		mAudioEncoder.encode(samples, pts);
+		processSamples(samples, pts);
 	}
+	
+	
+	
+	public void processFrame(byte[] data, long pts) {
+		//TODO: other processing
+		mVideoEncoder.encode(data, pts);
+	}
+	
+	public void processSamples(byte[] data, long pts) {
+		//TODO: other processing
+		mAudioEncoder.encode(data, pts);
+	}
+	
+	public void adjustBitrate(int bitrate) throws Exception {
+		stop();
+		mVideoBitrate = bitrate * 8/10;
+		mAudioBitrate = bitrate * 1/10;
+		Log.i(TAG, "vb: " + mVideoBitrate + ", ab: " + mAudioBitrate);
+		start();
+	}	
 }
