@@ -1,4 +1,4 @@
-package me.shengbin.liverecorder;
+package me.shengbin.corerecorder;
 
 public interface VideoEncoder {
 	void open(int width, int height, int frameRate, int bitrate) throws Exception;

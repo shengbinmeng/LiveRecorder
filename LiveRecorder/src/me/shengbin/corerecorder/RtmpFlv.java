@@ -1,4 +1,4 @@
-package me.shengbin.liverecorder;
+package me.shengbin.corerecorder;
 
 import android.media.MediaCodec;
 import android.media.MediaFormat;
@@ -482,7 +482,7 @@ public class RtmpFlv {
     {
         public final static int Reserved = 0;
 
-        // Table 1.1 ¨C Audio Object Type definition
+        // Table 1.1 ï¿½C Audio Object Type definition
         // @see @see aac-mp4a-format-ISO_IEC_14496-3+2001.pdf, page 23
         public final static int AacMain = 1;
         public final static int AacLC = 2;
@@ -534,7 +534,7 @@ public class RtmpFlv {
     }
 
     /**
-     * Table 7-1 ¨C NAL unit type codes, syntax element categories, and NAL unit type classes
+     * Table 7-1 ï¿½C NAL unit type codes, syntax element categories, and NAL unit type classes
      * H.264-AVC-ISO_IEC_14496-10-2012.pdf, page 83.
      */
     class SrsAvcNaluType

@@ -1,4 +1,4 @@
-package me.shengbin.liverecorder;
+package me.shengbin.corerecorder;
 
 import android.util.Log;
 
@@ -17,7 +17,7 @@ public class CoreRecorder {
 	private int mVideoBitrate = 0;
 	private String mOutputAddress = null;
 	
-	CoreRecorder () {
+	public CoreRecorder () {
 		// Default values
 		mSampleRate = 44100;
 		mChannelCount = 2;

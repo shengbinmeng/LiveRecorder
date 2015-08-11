@@ -1,4 +1,4 @@
-package me.shengbin.liverecorder;
+package me.shengbin.corerecorder;
 
 import java.io.File;
 import java.io.FileNotFoundException;

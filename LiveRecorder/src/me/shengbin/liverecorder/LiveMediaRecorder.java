@@ -3,6 +3,7 @@ package me.shengbin.liverecorder;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import me.shengbin.corerecorder.CoreRecorder;
 import android.app.Activity;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;

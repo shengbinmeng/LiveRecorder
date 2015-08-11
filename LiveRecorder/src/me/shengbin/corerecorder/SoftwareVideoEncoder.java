@@ -1,4 +1,4 @@
-package me.shengbin.liverecorder;
+package me.shengbin.corerecorder;
 
 public class SoftwareVideoEncoder implements VideoEncoder {
 

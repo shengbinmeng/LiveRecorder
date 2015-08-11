@@ -1,4 +1,4 @@
-package me.shengbin.liverecorder;
+package me.shengbin.corerecorder;
 
 public interface AudioEncoder {
 	void open(int sampleRate, int channelCount, int bitrate);
