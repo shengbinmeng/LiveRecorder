@@ -2,7 +2,6 @@
 #include <math.h>
 #include <string.h>
 #include <rtmp_sys.h>
-#include <log.h>
 #include "transport.h"
 
 
@@ -74,8 +73,6 @@ void Java_me_shengbin_corerecorder_RtmpFlv_rtmpSend(JNIEnv * env, jobject obj, j
 	send((char*)data, length, frame_type, timestamp);
 	env->ReleaseByteArrayElements(array,data,0);
 }
-
-
 
 void Java_me_shengbin_corerecorder_RtmpFlv_rtmpClose(JNIEnv * env, jobject obj)
 {

@@ -108,6 +108,7 @@ public class LiveMediaRecorder {
 						callback.statusUpdated(info, LiveMediaRecorder.this);
 					}
 				}
+				
 			}
 		});
 

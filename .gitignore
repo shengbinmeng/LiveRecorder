@@ -29,3 +29,4 @@ local.properties
 obj/
 libs/
 
+/LiveRecorder/.cproject

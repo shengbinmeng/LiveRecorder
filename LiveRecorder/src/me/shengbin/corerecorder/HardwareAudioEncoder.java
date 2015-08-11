@@ -18,8 +18,8 @@ public class HardwareAudioEncoder implements AudioEncoder {
     private MediaCodec mEncoder = null;
     private MediaCodec.BufferInfo mBufferInfo = new MediaCodec.BufferInfo();
     private ByteBuffer[] mInputBuffers = null, mOutputBuffers = null;
-
     private StreamOutput mOutput = null;
+    private boolean mEncoding = false;
 
     @Override
 	public void open(int sampleRate, int channelCount, int bitrate) {
@@ -32,13 +32,16 @@ public class HardwareAudioEncoder implements AudioEncoder {
         mEncoder = MediaCodec.createEncoderByType(MIMETYPE_AUDIO_AAC);
         mEncoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         mEncoder.start();
+        mEncoding = true;
 	}
 
 	@Override
 	public void encode(byte[] data, long pts) {
+		if (!mEncoding) {
+			return;
+		}
 		mInputBuffers = mEncoder.getInputBuffers();
         mOutputBuffers = mEncoder.getOutputBuffers();
-        
         // Feed in samples data
         while (true) {
             int inBufferIndex = mEncoder.dequeueInputBuffer(TIMEOUT_INPUT);
@@ -71,6 +74,13 @@ public class HardwareAudioEncoder implements AudioEncoder {
 
 	@Override
 	public void close() {
+		if (!mEncoding) {
+			return;
+		}
+		mEncoding = false;
+		
+		mInputBuffers = mEncoder.getInputBuffers();
+		mOutputBuffers = mEncoder.getOutputBuffers();
 		int inBufferIndex = mEncoder.dequeueInputBuffer(TIMEOUT_INPUT);
 		mEncoder.queueInputBuffer(inBufferIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
 		while (true) {
