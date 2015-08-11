@@ -13,8 +13,10 @@ static FILE *out_file_yuv;
 static int d_count = 0;
 static int bitstream_outputed = 0;
 static int b_entered = 0;
+
 #define OUTPUT_YUV 0
 #define OUTPUT_BS 1
+
 int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height)
 {
 	LOGD("open encoder \n");
@@ -25,7 +27,8 @@ int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height)
 
 	if( x264_param_default_preset( &param, "veryfast", tune ) < 0 )
 		return -1;
-	x264_param_parse( &param, "bitrate", "10000" );
+//	x264_param_parse( &param, "bitrate", "10000" );
+	x264_param_parse( &param, "qp", "25" );
 	x264_param_parse( &param, "fps", "15" );
 //	x264_param_parse( &param, "keyint", "1" );
 	param.i_width = width;
@@ -115,7 +118,7 @@ int test() {
 
 }
 
-int native_encoder_encode(JNIEnv *env, jobject thiz, jbyteArray pixels, jobject outstream, jlong pts)
+int native_encoder_encode(JNIEnv *env, jobject thiz, jbyteArray pixels, jobject outstream, jlong pts, jlongArray encap)
 {
 	if (0)//test encoder.
 	{
@@ -135,11 +138,14 @@ int native_encoder_encode(JNIEnv *env, jobject thiz, jbyteArray pixels, jobject 
 	jmethodID write_id;
 	jmethodID flush_id;
 	jbyteArray bytebuf;
+	long long int frameEncap[3];
 
 	LOGD("native_encoder_encode begin %d\n", d_count);
-	//fill pic as x264 input
+
 	if (pixels != NULL) {
+		//fill pic as x264 input
 		x264_picture_init(&pic);
+		pic.i_pts = pts;
 		frame_buf = (uint8_t*) env->GetByteArrayElements(pixels, NULL);
 		pic.img.i_csp = param.i_csp;
 		pic.img.i_plane = 3;
@@ -189,6 +195,11 @@ int native_encoder_encode(JNIEnv *env, jobject thiz, jbyteArray pixels, jobject 
 		env->CallVoidMethod(outstream, write_id, bytebuf, 0, payload_size);
 		env->CallVoidMethod(outstream, flush_id);
 
+		frameEncap[0] = pic_out.i_pts;
+		frameEncap[1] = pic_out.b_keyframe;
+		frameEncap[2] = 0;
+		env->SetLongArrayRegion(encap, 0, sizeof(frameEncap)/sizeof(frameEncap[0]), frameEncap);
+
 		return payload_size;
 	} else if (i_nal_size < 0) {
 		LOGD("x264 encode error.\n");
@@ -229,7 +240,7 @@ int native_encoder_close()
 
 static JNINativeMethod gMethods[] = {
     {"native_encoder_open", "(II)I", (void *)native_encoder_open},
-    {"native_encoder_encode", "([BLjava/io/ByteArrayOutputStream;J)I", (void *)native_encoder_encode},
+    {"native_encoder_encode", "([BLjava/io/ByteArrayOutputStream;J[J)I", (void *)native_encoder_encode},
 	{"native_encoder_encoding", "()I", (void *)native_encoder_encoding},
     {"native_encoder_close", "()I", (void *)native_encoder_close},
 };
