@@ -58,8 +58,8 @@ public class CoreRecorder {
 		mAudioEncoder.open(mSampleRate, mChannelCount, mAudioBitrate);
 		mVideoEncoder = new HardwareVideoEncoder();
 		mVideoEncoder.open(mWidth, mHeight, mFrameRate, mVideoBitrate);
-		mOutput = new FileStreamOutput();
-		mOutput.open(mOutputAddress);
+		mOutput = new LiveStreamOutput();
+		mOutput.open("rtmp://123.56.150.52/origin/test");
 		mAudioEncoder.setOutput(mOutput);
 		mVideoEncoder.setOutput(mOutput);
 	}

@@ -8,13 +8,7 @@
 
 static RTMP *rtmp = NULL;
 
-jstring Java_rtmpdemo_strongene_com_rtmpdemo_SrsHttpFlv_test(JNIEnv * env, jobject obj)
-{
-	char *str = "hello";
-	return env->NewStringUTF(str);
-}
-
-jboolean Java_me_shengbin_liverecorder_RtmpFlv_rtmpInit(JNIEnv * env, jobject obj, jstring url)
+jboolean Java_me_shengbin_corerecorder_RtmpFlv_rtmpInit(JNIEnv * env, jobject obj, jstring url)
 {
 	char * rtmp_url = (char*)env->GetStringUTFChars(url, 0);
 	LOGI("url %s",rtmp_url);
@@ -69,7 +63,7 @@ void send(char * buf, int bufLen, int type, unsigned int timestamp)
 	RTMPPacket_Free(rtmp_pkt);
 }
 
-void Java_me_shengbin_liverecorder_RtmpFlv_rtmpSend(JNIEnv * env, jobject obj, jbyteArray array, jint type, jint timestamp)
+void Java_me_shengbin_corerecorder_RtmpFlv_rtmpSend(JNIEnv * env, jobject obj, jbyteArray array, jint type, jint timestamp)
 {
 	int frame_type;
 	if (type == 8) frame_type = RTMP_PACKET_TYPE_AUDIO;
@@ -83,7 +77,7 @@ void Java_me_shengbin_liverecorder_RtmpFlv_rtmpSend(JNIEnv * env, jobject obj, j
 
 
 
-void Java_me_shengbin_liverecorder_RtmpFlv_rtmpClose(JNIEnv * env, jobject obj)
+void Java_me_shengbin_corerecorder_RtmpFlv_rtmpClose(JNIEnv * env, jobject obj)
 {
 	if(rtmp == NULL)
 		return;

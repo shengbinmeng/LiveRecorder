@@ -14,10 +14,9 @@
 extern "C" {
 #endif
 
-JNIEXPORT jstring JNICALL Java_rtmpdemo_strongene_com_rtmpdemo_SrsHttpFlv_test(JNIEnv * env, jobject obj);
-JNIEXPORT jboolean JNICALL Java_rtmpdemo_strongene_com_rtmpdemo_SrsHttpFlv_rtmpInit(JNIEnv * env, jobject obj, jstring url);
-JNIEXPORT void JNICALL Java_rtmpdemo_strongene_com_rtmpdemo_SrsHttpFlv_rtmpSend(JNIEnv * env, jobject obj, jbyteArray array, jint type, jint timestamp);
-JNIEXPORT void JNICALL Java_rtmpdemo_strongene_com_rtmpdemo_SrsHttpFlv_rtmpClose(JNIEnv * env, jobject obj);
+JNIEXPORT jboolean JNICALL Java_me_shengbin_corerecorder_RtmpFlv_rtmpInit(JNIEnv * env, jobject obj, jstring url);
+JNIEXPORT void JNICALL Java_me_shengbin_corerecorder_RtmpFlv_rtmpSend(JNIEnv * env, jobject obj, jbyteArray array, jint type, jint timestamp);
+JNIEXPORT void JNICALL Java_me_shengbin_corerecorder_RtmpFlv_rtmpClose(JNIEnv * env, jobject obj);
 
 #ifdef __cplusplus
 }

@@ -43,7 +43,6 @@ public class RtmpFlv {
 
     public native boolean rtmpInit(String url);
     public native void rtmpClose();
-    public native String test();
     public native void rtmpSend(byte[] array, int type, int timestamp);
 
     /**
@@ -200,7 +199,6 @@ public class RtmpFlv {
         // when bos not null, already connected.
         if (started)
             return;
-        test();
         disconnect();
         boolean suc = rtmpInit(url);
         if(!suc) {
@@ -256,7 +254,6 @@ public class RtmpFlv {
                     Log.e(TAG, String.format("worker: reconnect failed. e=%s", e.getMessage()));
                     disconnect();
                 }
-
                 try {
                     // when sequence header required,
                     // adjust the dts by the current frame and sent it.
@@ -267,7 +264,6 @@ public class RtmpFlv {
                         if (audioSequenceHeader != null) {
                             audioSequenceHeader.dts = frame.dts;
                         }
-
                         sendFlvTag(audioSequenceHeader);
                         sendFlvTag(videoSequenceHeader);
                         sequenceHeaderOk = true;
@@ -325,7 +321,6 @@ public class RtmpFlv {
                 return lhs.dts - rhs.dts;
             }
         });
-
         while (nb_videos > 1 && nb_audios > 1) {
             SrsFlvFrame frame = cache.remove(0);
             ByteBuffer buffer = ByteBuffer.allocate(15 + frame.tag.size);
@@ -1017,6 +1012,7 @@ public class RtmpFlv {
         }
 
         public void writeAudioSample(final ByteBuffer bb, MediaCodec.BufferInfo bi) throws Exception {
+        	bb.clear();
             int pts = (int)(bi.presentationTimeUs / 1000);
             int dts = (int)pts;
 
@@ -1062,7 +1058,9 @@ public class RtmpFlv {
 
                 aac_specific_config = frame;
                 aac_packet_type = 0; // 0 = AAC sequence header
+                Log.v("rtmp", "aac_specific_config");
             } else {
+            	Log.v("rtmp", frame.length + " " + bb.capacity());
                 bb.get(frame, 2, frame.length - 2);
             }
 
@@ -1099,6 +1097,7 @@ public class RtmpFlv {
         }
 
         public void writeVideoSample(final ByteBuffer bb, MediaCodec.BufferInfo bi) throws Exception {
+        	bb.clear();
             int pts = (int)(bi.presentationTimeUs / 1000);
             int dts = (int)pts;
 

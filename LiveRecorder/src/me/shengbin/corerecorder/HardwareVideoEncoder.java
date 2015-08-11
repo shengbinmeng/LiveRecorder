@@ -184,7 +184,7 @@ public class HardwareVideoEncoder implements VideoEncoder {
                 ByteBuffer buffer = mOutputBuffers[outBufferIndex];
                 byte[] bytes = new byte[mBufferInfo.size];
                 buffer.get(bytes);
-                mOutput.encodedSamplesReceived(bytes, mBufferInfo);
+                mOutput.encodedFrameReceived(bytes, mBufferInfo);
                 mEncoder.releaseOutputBuffer(outBufferIndex, false);
                 if ((mBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                 	Log.i(TAG, "End of stream.");
