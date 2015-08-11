@@ -92,7 +92,7 @@ public class LiveMediaRecorder {
 			public void onPreviewFrame(byte[] data, Camera cam) {
 				if (mRecording) {
 					long pts = (System.currentTimeMillis() - mStartTimeMillis) * 1000;
-					mCoreRecorder.processFrame(data, pts);
+					mCoreRecorder.videoFrameReceived(data, pts);
 				}
 				long currentTime = System.currentTimeMillis();
 				mFrameCount += 1;
@@ -145,7 +145,7 @@ public class LiveMediaRecorder {
 						break;
 					}
 					long pts = (System.currentTimeMillis() - mStartTimeMillis) * 1000;
-					mCoreRecorder.processSamples(mAudioBuffer, pts);
+					mCoreRecorder.audioSamplesReceived(mAudioBuffer, pts);
 				}
 
 				mAudioRecord.stop();

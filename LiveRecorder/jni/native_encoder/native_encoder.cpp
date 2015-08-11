@@ -1,7 +1,7 @@
 #include <jni.h>
 #include "jni_utils.h"
 extern "C" {
-#include "../libx264/include/x264.h"
+#include "x264.h"
 }
 
 #define LOG_TAG "native_encoder"

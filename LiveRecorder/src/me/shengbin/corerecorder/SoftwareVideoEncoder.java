@@ -39,9 +39,9 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 			close();
 		} else if (rv > 0) {
 			//output bitstream.
-			byte[] out_bytes = out.toByteArray();
+			byte[] bytes = out.toByteArray();
 			mBufferInfo.set(0, rv, presentationTimeUs, 0);//todo: fix set.
-			mOutput.encodedFrameReceived(out_bytes,mBufferInfo);
+			mOutput.encodedFrameReceived(bytes, mBufferInfo);
 		}
 	}
 

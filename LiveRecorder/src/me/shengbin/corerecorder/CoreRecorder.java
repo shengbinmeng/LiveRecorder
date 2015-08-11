@@ -79,13 +79,12 @@ public class CoreRecorder {
 	}
 	
 	
-	
-	public void processFrame(byte[] data, long pts) {
+	private void processFrame(byte[] data, long pts) {
 		//TODO: other processing
 		mVideoEncoder.encode(data, pts);
 	}
 	
-	public void processSamples(byte[] data, long pts) {
+	private void processSamples(byte[] data, long pts) {
 		//TODO: other processing
 		mAudioEncoder.encode(data, pts);
 	}

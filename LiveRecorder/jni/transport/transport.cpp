@@ -2,17 +2,10 @@
 #include <math.h>
 #include <string.h>
 #include <rtmp_sys.h>
-#include <log.h>
 #include "transport.h"
 
 
 static RTMP *rtmp = NULL;
-
-jstring Java_rtmpdemo_strongene_com_rtmpdemo_SrsHttpFlv_test(JNIEnv * env, jobject obj)
-{
-	char *str = "hello";
-	return env->NewStringUTF(str);
-}
 
 jboolean Java_me_shengbin_liverecorder_RtmpFlv_rtmpInit(JNIEnv * env, jobject obj, jstring url)
 {
@@ -80,8 +73,6 @@ void Java_me_shengbin_liverecorder_RtmpFlv_rtmpSend(JNIEnv * env, jobject obj, j
 	send((char*)data, length, frame_type, timestamp);
 	env->ReleaseByteArrayElements(array,data,0);
 }
-
-
 
 void Java_me_shengbin_liverecorder_RtmpFlv_rtmpClose(JNIEnv * env, jobject obj)
 {
