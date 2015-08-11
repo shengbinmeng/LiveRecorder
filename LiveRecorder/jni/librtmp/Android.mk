@@ -1,14 +1,10 @@
 LOCAL_PATH := $(call my-dir)
-include $(CLEAR_VARS)
-LOCAL_SRC_FILES += \
-    amf.c \
-    hashswf.c \
-    log.c \
-    parseurl.c \
-    rtmp.c 
-    
-LOCAL_CFLAGS := -D__STDC_CONSTANT_MACROS -DNO_CRYPTO
-LOCAL_LDLIBS := -llog
-LOCAL_MODULE := rtmp
+ARCH_ABI := $(TARGET_ARCH_ABI)
 
-include $(BUILD_SHARED_LIBRARY)
+#
+# Prebuilt Shared library
+#
+include $(CLEAR_VARS)
+LOCAL_MODULE	:= rtmp
+LOCAL_SRC_FILES	:= lib/$(ARCH_ABI)/librtmp.so
+include $(PREBUILT_SHARED_LIBRARY)
