@@ -14,7 +14,7 @@ static int d_count = 0;
 static int b_entered = 0;
 
 #define OUTPUT_YUV 0
-#define OUTPUT_BS 1
+#define OUTPUT_BS 0
 
 static void  int_to_str(int value, char *str) {
 	sprintf(str, "%d", value);
@@ -36,12 +36,12 @@ int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height, jint
 	x264_param_default(&param);
 	if( x264_param_default_preset( &param, "veryfast", tune ) < 0 )
 		return -1;
-//	x264_param_parse( &param, "qp", "35" );
+	x264_param_parse( &param, "qp", "35" );
 	//bitrate = vbv-maxrate is CBR mode.
-	x264_param_parse( &param, "bitrate", bitrate_str );
+/*	x264_param_parse( &param, "bitrate", bitrate_str );
 	x264_param_parse( &param, "vbv-maxrate", bitrate_str);
-	x264_param_parse( &param, "vbv-bufsize", "2000");
-
+	x264_param_parse( &param, "vbv-bufsize", "3000");
+*/
 	x264_param_parse( &param, "fps", fps_str );
 	x264_param_parse( &param, "keyint", fps_str);
 	x264_param_parse( &param, "bframes", "0");
