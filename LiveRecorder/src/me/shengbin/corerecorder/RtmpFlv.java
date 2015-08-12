@@ -800,7 +800,7 @@ public class RtmpFlv {
                 hdr.frame.put(level_idc);
                 // lengthSizeMinusOne, or NAL_unit_length, always use 4bytes size,
                 // so we always set it to 0x03.
-                hdr.frame.put((byte)0x03);
+                hdr.frame.put((byte)0xFF);
 
                 // reset the buffer.
                 hdr.frame.rewind();
