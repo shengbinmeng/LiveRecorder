@@ -18,28 +18,29 @@ static void  int_to_str(int value, char *str) {
 int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height, jint fps, jint bitrate)
 {
 	LOGD("open encoder \n");
-	char *tune = NULL;
 	char bitrate_str[20];
 	char fps_str[20];
+	char vbv_bufsize_str[20];
+	int x264_bitrate = bitrate/1000;
+	int b_cqp = 0;
 
 	if (bitrate <= 0 || fps <= 0)
-			return -1;
+		return -1;
 
 	int_to_str(fps, fps_str);
-	int_to_str(bitrate/1000, bitrate_str);
+	int_to_str(x264_bitrate, bitrate_str);
+	int_to_str(x264_bitrate/fps, vbv_bufsize_str);
 
-	x264_param_default(&param);
-	if( x264_param_default_preset( &param, "veryfast", tune ) < 0 )
+	if( x264_param_default_preset( &param, "veryfast", "zerolatency" ) < 0 )
 		return -1;
-	x264_param_parse( &param, "qp", "35" );
+
 	//bitrate = vbv-maxrate is CBR mode.
-/*	x264_param_parse( &param, "bitrate", bitrate_str );
+	x264_param_parse( &param, "bitrate", bitrate_str );
 	x264_param_parse( &param, "vbv-maxrate", bitrate_str);
-	x264_param_parse( &param, "vbv-bufsize", "3000");
-*/
+	x264_param_parse( &param, "vbv-bufsize", b_cqp ? vbv_bufsize_str : bitrate_str);
+
 	x264_param_parse( &param, "fps", fps_str );
 	x264_param_parse( &param, "keyint", fps_str);
-	x264_param_parse( &param, "bframes", "0");
 
 	param.i_width = width;
 	param.i_height= height;
