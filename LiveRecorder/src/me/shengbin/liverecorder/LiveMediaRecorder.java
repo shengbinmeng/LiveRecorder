@@ -45,6 +45,7 @@ public class LiveMediaRecorder {
 		
 		int videoBitrate = 200000, width = 640, height = 480, frameRate = 25;
 		int sampleRate = 44100, channelCount = 2, audioBitrate = 20000;
+		int videoEncoderType = CoreRecorder.EncoderType.HARDWARE_VIDEO;
 		String[] parts = options.split(" ");
 		for(int i = 0; i < parts.length; i++) {
 			String part = parts[i];
@@ -58,6 +59,12 @@ public class LiveMediaRecorder {
 				String size[] = value.split("x");
 				width = Integer.parseInt(size[0]);
 				height = Integer.parseInt(size[1]);
+			} else if (name.equalsIgnoreCase("videoEncoder")) {
+				if (value.equalsIgnoreCase("hardware")) {
+					videoEncoderType = CoreRecorder.EncoderType.HARDWARE_VIDEO;
+				} else {
+					videoEncoderType = CoreRecorder.EncoderType.SOFTWARE_VIDEO;
+				}
 			}
 		}
 		// Audio parameters are set here.
@@ -93,7 +100,7 @@ public class LiveMediaRecorder {
 		mPreview.setDisplaySize(params.width, params.height);
 		
 		mCoreRecorder = new CoreRecorder();
-		mCoreRecorder.configure(sampleRate, 2, audioBitrate, width, height, frameRate, videoBitrate, address);
+		mCoreRecorder.configure(sampleRate, 2, audioBitrate, width, height, frameRate, videoBitrate, videoEncoderType, address);
 		
 		mPrepared = true;
 	}

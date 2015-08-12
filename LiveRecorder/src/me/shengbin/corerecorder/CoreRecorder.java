@@ -3,6 +3,11 @@ package me.shengbin.corerecorder;
 import android.util.Log;
 
 public class CoreRecorder {
+	public static class EncoderType {
+		public static final int HARDWARE_VIDEO = 0;
+		public static final int SOFTWARE_VIDEO = 2;
+	}
+	
 	private static final String TAG = "CoreRecorder";
 	
 	private VideoEncoder mVideoEncoder = null;
@@ -16,6 +21,7 @@ public class CoreRecorder {
 	private int mFrameRate = 0;
 	private int mVideoBitrate = 0;
 	private String mOutputAddress = null;
+	private int mVideoEncoderType = 0;
 	
 	public CoreRecorder () {
 		// These are default values.
@@ -29,11 +35,12 @@ public class CoreRecorder {
 		mVideoBitrate = 200000;
 		
 		mOutputAddress = "/";
+		mVideoEncoderType = 0;
 	}
 	
-	public void configure(int sampleRate, int channelCount, int audioBitrate, int width, int height, int frameRate, int videoBitrate, String outputAddress) {
+	public void configure(int sampleRate, int channelCount, int audioBitrate, int width, int height, int frameRate, int videoBitrate, int videoEncoderType, String outputAddress) {
 		configureAudio(sampleRate, channelCount, audioBitrate);
-		configureVideo(width, height, frameRate, videoBitrate);
+		configureVideo(width, height, frameRate, videoBitrate, videoEncoderType);
 		mOutputAddress = outputAddress;
 	}
 	
@@ -43,21 +50,29 @@ public class CoreRecorder {
 		mAudioBitrate = bitrate;
 	}
 	
-	public void configureVideo(int width, int height, int frameRate, int bitrate) {
+	public void configureVideo(int width, int height, int frameRate, int bitrate, int encoderType) {
 		mWidth = width;
 		mHeight = height;
 		mFrameRate = frameRate;
 		mVideoBitrate = bitrate;
+		mVideoEncoderType = encoderType;
 	}
 	
 	public void start() throws Exception {
 		String s = "Configuration:" + mSampleRate + ", " + mChannelCount + ", " + mAudioBitrate + 
 				", " + mWidth + ", " + mHeight + ", " + mFrameRate + ", " + mVideoBitrate + ", " + mOutputAddress;
 		Log.i(TAG, s);
+		
 		mAudioEncoder = new HardwareAudioEncoder();
 		mAudioEncoder.open(mSampleRate, mChannelCount, mAudioBitrate);
-		mVideoEncoder = new HardwareVideoEncoder();
+		
+		if (mVideoEncoderType == EncoderType.HARDWARE_VIDEO) {
+			mVideoEncoder = new HardwareVideoEncoder();
+		} else if (mVideoEncoderType == EncoderType.SOFTWARE_VIDEO) {
+			mVideoEncoder = new SoftwareVideoEncoder();
+		}
 		mVideoEncoder.open(mWidth, mHeight, mFrameRate, mVideoBitrate);
+		
 		if (mOutputAddress.startsWith("rtmp://")) {
 			mOutput = new LiveStreamOutput();
 		} else if (mOutputAddress.startsWith("/")) {
