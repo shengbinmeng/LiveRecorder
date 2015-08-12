@@ -25,7 +25,8 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 	public void open(int width, int height, int frameRate, int bitrate) throws Exception {
 		int rv = native_encoder_open(width, height, bitrate);
 		if (rv < 0) {
-			
+			Log.e(TAG, "Software encoder open error.");
+			close();
 		}
 	}
 
@@ -44,7 +45,7 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 			long pts = frameEncapsulation[0];
 			int boolKeyFrame = (int) frameEncapsulation[1];
 			int flag = 0;
-			
+			Log.d(TAG, "boolKeyFrame = " + boolKeyFrame);
 			if (boolKeyFrame == 1) {
 				flag |= BUFFER_FLAG_KEY_FRAME;
 			}
