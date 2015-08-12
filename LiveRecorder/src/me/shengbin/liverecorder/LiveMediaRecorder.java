@@ -85,7 +85,7 @@ public class LiveMediaRecorder {
 			}
 		}
 		mCoreRecorder = new CoreRecorder();
-		mCoreRecorder.configure(sampleRate, 2, videoBitrate, width, height, 25, audioBitrate, address);
+		mCoreRecorder.configure(sampleRate, 2, audioBitrate, width, height, 25, videoBitrate, address);
 		
 		mPrepared = true;
 	}
