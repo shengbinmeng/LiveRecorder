@@ -1,20 +1,15 @@
 #include <jni.h>
+#include <stdio.h>
 #include "jni_utils.h"
 extern "C" {
 #include "x264.h"
 }
 
 #define LOG_TAG "native_encoder"
-#include <stdio.h>
+
 static x264_t *h;
 static x264_param_t param;
-static FILE *out_file;
-static FILE *out_file_yuv;
 static int d_count = 0;
-static int b_entered = 0;
-
-#define OUTPUT_YUV 0
-#define OUTPUT_BS 0
 
 static void  int_to_str(int value, char *str) {
 	sprintf(str, "%d", value);
@@ -52,98 +47,15 @@ int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height, jint
 	LOGD("fps_num = %d, fps_den = %d, bitrate = %d, rc method = %d\n", param.i_fps_num, param.i_fps_den, param.rc.i_bitrate, param.rc.i_rc_method);
 
 	h = x264_encoder_open( &param );
-#if OUTPUT_BS
-	out_file = fopen("/sdcard/test.264", "w");
-	if (out_file == NULL) {
-		LOGD("can't open output .264 \n");
-		return -1;
-	}
-#endif
-#if OUTPUT_YUV
-	out_file_yuv = fopen("/sdcard/test.yuv", "w");
-	if (out_file_yuv == NULL) {
-		LOGD("can't open output .yuv \n");
-		return -1;
-	}
-#endif
+
 	if (!h)
 		return -1;
 
 	return 0;
 }
 
-int test() {
-	FILE *input = fopen("/sdcard/test.yuv", "r");
-	int size = (param.i_width * param.i_height * 3)/2;
-	uint8_t *buf = (uint8_t *)malloc(size);
-	int i_nal_size = 0;
-	x264_nal_t *nal;
-	int i_nal;
-	int payload_size = 0;
-	int i;
-	x264_picture_t pic_out;
-	x264_picture_t pic;
-	int frame = 1;
-	if (input == NULL) {
-		LOGD("can't open input \n");
-		return 0;
-	}
-	while(fread(buf, 1, size, input)) {
-		x264_picture_init(&pic);
-		pic.img.i_csp = param.i_csp;
-		pic.img.i_plane = 3;
-		pic.img.i_stride[0] = param.i_width;
-		pic.img.i_stride[1] = pic.img.i_stride[2] = param.i_width/2;
-		pic.img.plane[0] = buf;
-		pic.img.plane[1] = pic.img.plane[0] + param.i_width * param.i_height;
-		pic.img.plane[2] = pic.img.plane[1] + param.i_width * param.i_height/4;
-
-		i_nal_size = x264_encoder_encode( h, &nal, &i_nal, &pic, &pic_out );
-		payload_size = 0;
-		for (i = 0; i < i_nal; i++){
-			payload_size += nal[i].i_payload;
-		}
-
-		if (i_nal_size > 0) {
-			LOGD("encode frame %d\n", frame++);
-			fwrite(nal[0].p_payload, 1, payload_size, out_file);
-		}
-	}
-	LOGD("input exhaust.\n");
-	while (x264_encoder_delayed_frames(h)) {
-		i_nal_size = x264_encoder_encode( h, &nal, &i_nal, NULL, &pic_out );
-		payload_size = 0;
-		for (i = 0; i < i_nal; i++){
-			payload_size += nal[i].i_payload;
-		}
-
-		if (i_nal_size > 0) {
-			LOGD("encode frame %d\n", frame++);
-			fwrite(nal[0].p_payload, 1, payload_size, out_file);
-		}
-	}
-
-	free(buf);
-	fclose(input);
-	fclose(out_file);
-	if (out_file_yuv)
-		fclose(out_file_yuv);
-	if( h )
-		x264_encoder_close( h );
-	LOGD("encoder closed. \n");
-	b_entered =1;
-
-}
-
 int native_encoder_encode(JNIEnv *env, jobject thiz, jbyteArray pixels, jobject outstream, jlong pts, jlongArray encap)
 {
-	if (0)//test encoder.
-	{
-		if (b_entered == 0)
-			test();
-		return 0;
-	}
-
 	if (h == NULL)
 		return -1;
 
@@ -173,13 +85,6 @@ int native_encoder_encode(JNIEnv *env, jobject thiz, jbyteArray pixels, jobject 
 		pic.img.plane[0] = frame_buf;
 		pic.img.plane[2] = pic.img.plane[0] + param.i_width * param.i_height;
 		pic.img.plane[1] = pic.img.plane[2] + param.i_width * param.i_height/4;
-#if OUTPUT_YUV
-		if (out_file_yuv) {
-			fwrite(pic.img.plane[0], 1, param.i_width * param.i_height, out_file_yuv);
-			fwrite(pic.img.plane[1], 1, param.i_width * param.i_height/4, out_file_yuv);
-			fwrite(pic.img.plane[2], 1, param.i_width * param.i_height/4, out_file_yuv);
-		}
-#endif
 		i_nal_size = x264_encoder_encode( h, &nal, &i_nal, &pic, &pic_out );
 		env->ReleaseByteArrayElements(pixels, (jbyte*)frame_buf, JNI_ABORT);
 	} else {
@@ -194,10 +99,6 @@ int native_encoder_encode(JNIEnv *env, jobject thiz, jbyteArray pixels, jobject 
 //			LOGD("i_nal = %d, i_nal_size = %d, p_payload = %d\n", i, nal[i].i_payload, nal[i].p_payload);
 			payload_size += nal[i].i_payload;
 		}
-#if OUTPUT_BS
-		if (out_file)
-			fwrite(nal[0].p_payload, 1, payload_size, out_file);
-#endif
 		class_OutputStream = env->GetObjectClass(outstream);
 		if ( NULL == class_OutputStream ) {
 			LOGE("jni GetObjectClass failed!");
@@ -258,14 +159,6 @@ int native_encoder_close()
 	LOGI("close encoder \n");
 	if( h )
 		x264_encoder_close( h );
-#if OUTPUT_BS
-	if (out_file)
-		fclose(out_file);
-#endif
-#if OUTPUT_YUV
-	if (out_file_yuv)
-		fclose(out_file_yuv);
-#endif
 	return 0;
 }
 

@@ -13,7 +13,6 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 
 public class LiveMediaRecorder {
 	private static final String TAG = "LiveMediaRecorder";
