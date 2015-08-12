@@ -11,7 +11,7 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 		System.loadLibrary("native_encoder");
 	}
 	private static final String TAG = "SoftwareVideoEncoder";
-	private native int native_encoder_open(int width, int height, int bitrate);
+	private native int native_encoder_open(int width, int height, int fps, int bitrate);
 	private native int native_encoder_encode(byte[] data, ByteArrayOutputStream out, long pts, long[] frameEncapsulation);
 	private native int native_encoder_encoding();
 	private native int native_encoder_close();
@@ -23,7 +23,7 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 	
 	@Override
 	public void open(int width, int height, int frameRate, int bitrate) throws Exception {
-		int rv = native_encoder_open(width, height, bitrate);
+		int rv = native_encoder_open(width, height, frameRate, bitrate);
 		if (rv < 0) {
 			Log.e(TAG, "Software encoder open error.");
 			close();
@@ -45,7 +45,7 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 			long pts = frameEncapsulation[0];
 			int boolKeyFrame = (int) frameEncapsulation[1];
 			int flag = 0;
-	//		Log.d(TAG, "boolKeyFrame = " + boolKeyFrame);
+			Log.d(TAG, "pts = " + pts);
 			if (boolKeyFrame == 1) {
 				flag |= BUFFER_FLAG_KEY_FRAME;
 			}

@@ -11,30 +11,39 @@ static x264_param_t param;
 static FILE *out_file;
 static FILE *out_file_yuv;
 static int d_count = 0;
-static int bitstream_outputed = 0;
 static int b_entered = 0;
 
 #define OUTPUT_YUV 0
-#define OUTPUT_BS 0
+#define OUTPUT_BS 1
 
-int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height, jint bitrate)
+static void  int_to_str(int value, char *str) {
+	sprintf(str, "%d", value);
+}
+
+int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height, jint fps, jint bitrate)
 {
 	LOGD("open encoder \n");
 	char *tune = NULL;
-	bitstream_outputed = 0;
-
-	if (bitrate <= 0)
-		return -1;
-
 	char bitrate_str[20];
-	sprintf(bitrate_str, "%d", bitrate/1000);
-	LOGD("bitrate: %s\n", bitrate_str);
-	if( x264_param_default_preset( &param, "ultrafast", tune ) < 0 )
+	char fps_str[20];
+
+	if (bitrate <= 0 || fps <= 0)
+			return -1;
+
+	int_to_str(fps, fps_str);
+	int_to_str(bitrate/1000, bitrate_str);
+
+	x264_param_default(&param);
+	if( x264_param_default_preset( &param, "veryfast", tune ) < 0 )
 		return -1;
-	x264_param_parse( &param, "bitrate", bitrate_str );
-	x264_param_parse( &param, "fps", "20" );
+	x264_param_parse( &param, "qp", "30" );
+//	x264_param_parse( &param, "bitrate", bitrate_str );
+	x264_param_parse( &param, "fps", fps_str );
 	param.i_width = width;
 	param.i_height= height;
+
+
+	LOGD("fps_num = %d, fps_den = %d, bitrate = %d\n", param.i_fps_num, param.i_fps_den, param.rc.i_bitrate);
 
 	h = x264_encoder_open( &param );
 #if OUTPUT_BS
@@ -91,7 +100,7 @@ int test() {
 
 		if (i_nal_size > 0) {
 			LOGD("encode frame %d\n", frame++);
-			fwrite(nal[0].p_payload+bitstream_outputed, 1, payload_size, out_file);
+			fwrite(nal[0].p_payload, 1, payload_size, out_file);
 		}
 	}
 	LOGD("input exhaust.\n");
@@ -104,7 +113,7 @@ int test() {
 
 		if (i_nal_size > 0) {
 			LOGD("encode frame %d\n", frame++);
-			fwrite(nal[0].p_payload+bitstream_outputed, 1, payload_size, out_file);
+			fwrite(nal[0].p_payload, 1, payload_size, out_file);
 		}
 	}
 
@@ -181,7 +190,7 @@ int native_encoder_encode(JNIEnv *env, jobject thiz, jbyteArray pixels, jobject 
 		}
 #if OUTPUT_BS
 		if (out_file)
-			fwrite(nal[0].p_payload+bitstream_outputed, 1, payload_size, out_file);
+			fwrite(nal[0].p_payload, 1, payload_size, out_file);
 #endif
 		class_OutputStream = env->GetObjectClass(outstream);
 		if ( NULL == class_OutputStream ) {
@@ -199,7 +208,7 @@ int native_encoder_encode(JNIEnv *env, jobject thiz, jbyteArray pixels, jobject 
 			LOGE("jni NewByteArray(%d) failed!", payload_size);
 			goto end;
 		}
-		env->SetByteArrayRegion(bytebuf, 0, payload_size, (jbyte*)nal[0].p_payload+bitstream_outputed);
+		env->SetByteArrayRegion(bytebuf, 0, payload_size, (jbyte*)nal[0].p_payload);
 		env->CallVoidMethod(outstream, write_id, bytebuf, 0, payload_size);
 		env->CallVoidMethod(outstream, flush_id);
 		LOGD("nal size: %d", payload_size);
@@ -255,7 +264,7 @@ int native_encoder_close()
 }
 
 static JNINativeMethod gMethods[] = {
-    {"native_encoder_open", "(III)I", (void *)native_encoder_open},
+    {"native_encoder_open", "(IIII)I", (void *)native_encoder_open},
     {"native_encoder_encode", "([BLjava/io/ByteArrayOutputStream;J[J)I", (void *)native_encoder_encode},
 	{"native_encoder_encoding", "()I", (void *)native_encoder_encoding},
     {"native_encoder_close", "()I", (void *)native_encoder_close},
