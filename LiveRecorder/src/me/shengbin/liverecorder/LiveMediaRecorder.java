@@ -107,13 +107,33 @@ public class LiveMediaRecorder {
 		mStartTimeMillis = System.currentTimeMillis();
 		mCountBeginTime = mStartTimeMillis;
 		mRecording = true;
-		final Size s = mCamera.getParameters().getPreviewSize();
 		// Start feeding video frame.
 		mCamera.setPreviewCallback(new PreviewCallback() {
 			@Override
 			public void onPreviewFrame(byte[] data, Camera cam) {
+				Size s = mCamera.getParameters().getPreviewSize();
+				int width = s.width, height = s.height;
 				if (mRecording) {
 					long pts = (System.currentTimeMillis() - mStartTimeMillis) * 1000;
+					int yuvSize = width * height * 3 / 2;
+					if (data.length > yuvSize) {
+						// For YV12, the image buffer that is received is not necessarily tightly packed.
+						// See https://developer.android.com/reference/android/hardware/Camera.Parameters.html#setPreviewFormat(int).
+						byte[] tightData = new byte[yuvSize];
+						int yStride   = (int) Math.ceil(width / 16.0) * 16;
+						int uvStride  = (int) Math.ceil( (yStride / 2) / 16.0) * 16;
+						// Copy Y
+						for (int r = 0; r < height; r++) {
+							System.arraycopy(data, r * yStride, tightData, r * width, width);
+						}
+						// Copy UV
+						for (int r = 0; r < height/2; r++) {
+							System.arraycopy(data, yStride * height + r * uvStride, tightData, width * height + r * width/2, width/2);
+							System.arraycopy(data, yStride * height + uvStride * height/2 + r * uvStride, tightData, width * height + width/2 * height/2 + r * width/2, width/2);
+						}
+						
+						data = tightData;
+					}
 					mCoreRecorder.videoFrameReceived(data, pts);
 				}
 				long currentTime = System.currentTimeMillis();
