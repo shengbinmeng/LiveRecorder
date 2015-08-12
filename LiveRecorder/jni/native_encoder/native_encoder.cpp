@@ -20,17 +20,19 @@ static int b_entered = 0;
 int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height, jint bitrate)
 {
 	LOGD("open encoder \n");
-
-//	char *preset = "ultrafast";
 	char *tune = NULL;
 	bitstream_outputed = 0;
 
-	if( x264_param_default_preset( &param, "veryfast", tune ) < 0 )
+	if (bitrate <= 0)
 		return -1;
-//	x264_param_parse( &param, "bitrate", "10000" );
-	x264_param_parse( &param, "qp", "25" );
-	x264_param_parse( &param, "fps", "15" );
-//	x264_param_parse( &param, "keyint", "1" );
+
+	char bitrate_str[20];
+	sprintf(bitrate_str, "%d", bitrate/1000);
+	LOGD("bitrate: %s\n", bitrate_str);
+	if( x264_param_default_preset( &param, "ultrafast", tune ) < 0 )
+		return -1;
+	x264_param_parse( &param, "bitrate", bitrate_str );
+	x264_param_parse( &param, "fps", "20" );
 	param.i_width = width;
 	param.i_height= height;
 
@@ -164,6 +166,7 @@ int native_encoder_encode(JNIEnv *env, jobject thiz, jbyteArray pixels, jobject 
 		}
 #endif
 		i_nal_size = x264_encoder_encode( h, &nal, &i_nal, &pic, &pic_out );
+		env->ReleaseByteArrayElements(pixels, (jbyte*)frame_buf, JNI_ABORT);
 	} else {
 		LOGD("input NULL, do encoder flush\n");
 		i_nal_size = x264_encoder_encode( h, &nal, &i_nal, NULL, &pic_out );
@@ -172,7 +175,7 @@ int native_encoder_encode(JNIEnv *env, jobject thiz, jbyteArray pixels, jobject 
 	if (i_nal_size > 0) {
 		//output bitstream
 		payload_size = 0;
-		for (i = 0; i < i_nal; i++){
+		for (i = 0; i < i_nal; i++) {
 //			LOGD("i_nal = %d, i_nal_size = %d, p_payload = %d\n", i, nal[i].i_payload, nal[i].p_payload);
 			payload_size += nal[i].i_payload;
 		}
@@ -199,12 +202,16 @@ int native_encoder_encode(JNIEnv *env, jobject thiz, jbyteArray pixels, jobject 
 		env->SetByteArrayRegion(bytebuf, 0, payload_size, (jbyte*)nal[0].p_payload+bitstream_outputed);
 		env->CallVoidMethod(outstream, write_id, bytebuf, 0, payload_size);
 		env->CallVoidMethod(outstream, flush_id);
+		LOGD("nal size: %d", payload_size);
 
 		frameEncap[0] = pic_out.i_pts;
 		frameEncap[1] = pic_out.b_keyframe;
 		frameEncap[2] = 0;
 		env->SetLongArrayRegion(encap, 0, sizeof(frameEncap)/sizeof(frameEncap[0]), frameEncap);
-		LOGD("b_keyframe = %d", pic_out.b_keyframe);
+//		LOGD("b_keyframe = %d", pic_out.b_keyframe);
+		if ( NULL != bytebuf ) {
+			env->DeleteLocalRef(bytebuf);
+		}
 		return payload_size;
 	} else if (i_nal_size < 0) {
 		LOGE("x264 encode error.\n");

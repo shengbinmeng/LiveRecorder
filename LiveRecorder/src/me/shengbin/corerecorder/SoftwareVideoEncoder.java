@@ -45,7 +45,7 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 			long pts = frameEncapsulation[0];
 			int boolKeyFrame = (int) frameEncapsulation[1];
 			int flag = 0;
-			Log.d(TAG, "boolKeyFrame = " + boolKeyFrame);
+	//		Log.d(TAG, "boolKeyFrame = " + boolKeyFrame);
 			if (boolKeyFrame == 1) {
 				flag |= BUFFER_FLAG_KEY_FRAME;
 			}
@@ -57,6 +57,7 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 
 	@Override
 	public void close() {
+		Log.e(TAG, "Software closed was called.");
 		int presentationTimeUs = 0;
 		// Flush encoder.
 		while (native_encoder_encoding() == 1) {

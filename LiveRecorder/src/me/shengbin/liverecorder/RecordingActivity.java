@@ -106,14 +106,14 @@ public class RecordingActivity extends Activity implements LiveMediaRecorder.Cal
 					    public void run() {
 							mProgressDlg.dismiss();
 							mProgressDlg = null;
+							mInfoText.setText("");
+							mControlButton.setText(R.string.start);
 					    }
 					});
 				}
 			}
 		}.start();
 		
-		mInfoText.setText("");
-		mControlButton.setText(R.string.start);
 	}
 	
 	public void updateInfoText(String info) {
