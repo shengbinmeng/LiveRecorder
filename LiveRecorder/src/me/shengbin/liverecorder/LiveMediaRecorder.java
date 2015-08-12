@@ -42,33 +42,9 @@ public class LiveMediaRecorder {
 	}
 	
 	public void open(String options, String address) throws Exception {
-		// Audio parameters are set here.
-		int sampleRate = 44100;
-		int channelConfig = AudioFormat.CHANNEL_IN_STEREO;
-		int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
-		int bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig,
-				audioFormat);
-		mAudioBuffer = new byte[bufferSize];
-		mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.DEFAULT,
-				sampleRate, channelConfig, audioFormat, bufferSize);
-		if (mAudioRecord == null) {
-			throw new Exception("Prepare audio source failed.");
-		}
-		// Create an instance of Camera.
-		mCamera = getCameraInstance();
-		if (mCamera == null) {
-			throw new Exception("Prepare video source failed. Can not get camera instance.");
-		}
-		// Create our Preview view and set it as the content of our activity.
-		mPreview = new CameraPreview(mActivity, mCamera);
-		mPreviewHolder.addView(mPreview);
-
-		// Set display size to the size of our frame layout, i.e. full screen.
-		// TODO: Consider the ratio.
-		LayoutParams params = (LayoutParams) mPreviewHolder.getLayoutParams();
-		mPreview.setDisplaySize(params.width, params.height);
 		
-		int videoBitrate = 200000, audioBitrate = 20000, width = 640, height = 480;
+		int videoBitrate = 200000, width = 640, height = 480, frameRate = 25;
+		int sampleRate = 44100, channelCount = 2, audioBitrate = 20000;
 		String[] parts = options.split(" ");
 		for(int i = 0; i < parts.length; i++) {
 			String part = parts[i];
@@ -84,8 +60,40 @@ public class LiveMediaRecorder {
 				height = Integer.parseInt(size[1]);
 			}
 		}
+		// Audio parameters are set here.
+		int channelConfig = AudioFormat.CHANNEL_IN_STEREO;
+		int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
+		if (channelCount == 1) {
+			channelConfig = AudioFormat.CHANNEL_IN_MONO;
+		}
+		int bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig,
+				audioFormat);
+		mAudioBuffer = new byte[bufferSize];
+		mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.DEFAULT,
+				sampleRate, channelConfig, audioFormat, bufferSize);
+		if (mAudioRecord == null) {
+			throw new Exception("Prepare audio source failed.");
+		}
+		
+		// Create an instance of Camera.
+		mCamera = getCameraInstance();
+		if (mCamera == null) {
+			throw new Exception("Prepare video source failed. Can not get camera instance.");
+		}
+		// Create our Preview view and set it as the content of our activity.
+		mPreview = new CameraPreview(mActivity, mCamera);
+		mPreview.preferPreviewFps(frameRate);
+		Camera.Size size = mPreview.preferPreviewSize(width, height);
+		width = size.width;
+		height = size.height;
+		mPreviewHolder.addView(mPreview);
+		// Set display size to the size of our frame layout, i.e. full screen.
+		// TODO: Consider the ratio.
+		LayoutParams params = (LayoutParams) mPreviewHolder.getLayoutParams();
+		mPreview.setDisplaySize(params.width, params.height);
+		
 		mCoreRecorder = new CoreRecorder();
-		mCoreRecorder.configure(sampleRate, 2, audioBitrate, width, height, 25, videoBitrate, address);
+		mCoreRecorder.configure(sampleRate, 2, audioBitrate, width, height, frameRate, videoBitrate, address);
 		
 		mPrepared = true;
 	}
