@@ -34,7 +34,7 @@ public class RtmpFlv {
 
     private static final int VIDEO_TRACK = 100;
     private static final int AUDIO_TRACK = 101;
-    private static final String TAG = "SrsMuxer";
+    private static final String TAG = "RTMP_FLV";
 
     static{
         System.loadLibrary("rtmp");
@@ -43,7 +43,7 @@ public class RtmpFlv {
 
     public native boolean rtmpInit(String url);
     public native void rtmpClose();
-    public native void rtmpSend(byte[] array, int type, int timestamp);
+    public native boolean rtmpSend(byte[] array, int type, int timestamp);
 
     /**
      * constructor.
@@ -60,6 +60,19 @@ public class RtmpFlv {
         cache = new ArrayList<SrsFlvFrame>();
     }
 
+    public boolean RtmpConnect()
+    {
+    	boolean suc = rtmpInit(url);
+        if(!suc) {
+            Log.v(TAG,"init failed");
+        } else {
+        	started = true;
+            Log.v(TAG,"init succeed");
+            Log.i(TAG, String.format("worker: muxer opened, url=%s", url));
+        }
+        return suc;
+    }
+    
     /**
      * print the size of bytes in bb
      * @param bb the bytes to print.
@@ -196,31 +209,15 @@ public class RtmpFlv {
     }
 
     private void reconnect() throws Exception {
-        // when bos not null, already connected.
         if (started)
             return;
         disconnect();
-        boolean suc = rtmpInit(url);
-        if(!suc) {
-            Log.v("rtmp","init failed");
-        } else {
-            Log.v("rtmp","init");
-        }
-        started = true;
-        /*
-        URL u = new URL(url);
-        conn = (HttpURLConnection)u.openConnection();
-        Log.i(TAG, String.format("worker: connect to SRS by url=%s", url));
-        conn.setDoOutput(true);
-        conn.setChunkedStreamingMode(0);
-        conn.setRequestProperty("Content-Type", "application/octet-stream");
-        bos = new BufferedOutputStream(conn.getOutputStream());
-        */
-
-        Log.i(TAG, String.format("worker: muxer opened, url=%s", url));
-
+        if (!RtmpConnect())
+        	return;
+        clearCache();
         // write 13B header
         // 9bytes header and 4bytes first previous-tag-size
+        /*
         byte[] flv_header = new byte[]{
                 'F', 'L', 'V', // Signatures "FLV"
                 (byte) 0x01, // File version (for example, 0x01 for FLV version 1)
@@ -228,9 +225,9 @@ public class RtmpFlv {
                 (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x09, // DataOffset UI32 The length of this header in bytes
                 (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00
         };
+        */
         //rtmpSend(flv_header,18,0);
-        Log.i(TAG, String.format("worker: flv header ok."));
-        clearCache();
+        
     }
 
     private void cycle() throws Exception {
@@ -293,13 +290,14 @@ public class RtmpFlv {
     }
 
     private void sendFlvTag(SrsFlvFrame frame) throws IOException {
-        if (frame == null) {
+    	if(!started)
+    		return;
+    	
+        if (frame == null)
             return;
-        }
 
-        if (frame.tag.size <= 0) {
+        if (frame.tag.size <= 0)
             return;
-        }
 
         if (frame.is_video()) {
             nb_videos++;
@@ -365,14 +363,12 @@ public class RtmpFlv {
             pps.putInt((int) (frame.tag.size + 11));
             buffer.put(pps);
 
-            try {
-                rtmpSend(buffer.array(),frame.type,frame.dts);
-            } catch (Exception e)
+            
+            if(!rtmpSend(buffer.array(),frame.type,frame.dts))
             {
-                e.printStackTrace();;
+            	Log.i(TAG, "worker: sending err");
+            	started = false;
             }
-
-
             if (frame.is_keyframe()) {
                 Log.i(TAG, String.format("worker: send key frame type=%d, dts=%d, size=%dB, tag_size=%#x, time=%#x",
                         frame.type, frame.dts, frame.tag.size, tag_size, time

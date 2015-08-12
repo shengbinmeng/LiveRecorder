@@ -35,12 +35,10 @@ jboolean Java_me_shengbin_corerecorder_RtmpFlv_rtmpInit(JNIEnv * env, jobject ob
 	return true;
 }
 
-void send(char * buf, int bufLen, int type, unsigned int timestamp)
+bool send(char * buf, int bufLen, int type, unsigned int timestamp)
 {
 	LOGI("start sending");
 	RTMPPacket *rtmp_pkt;
-	//RTMPPacket_Reset(rtmp_pkt);
-	//LOGI("packet reset");
 	rtmp_pkt = (RTMPPacket*)malloc(sizeof(RTMPPacket));
 	memset(rtmp_pkt,0,sizeof(RTMPPacket));
 	RTMPPacket_Alloc(rtmp_pkt, bufLen);
@@ -55,14 +53,15 @@ void send(char * buf, int bufLen, int type, unsigned int timestamp)
 	memcpy(rtmp_pkt->m_body, buf, bufLen);
 	LOGI("length: %d", bufLen);
 	bool ret = RTMP_SendPacket(rtmp, rtmp_pkt, 0);
+	RTMPPacket_Free(rtmp_pkt);
 	if(ret)
 		LOGI("packet sent");
 	else
 		LOGI("packet sent err");
-	RTMPPacket_Free(rtmp_pkt);
+	return ret;
 }
 
-void Java_me_shengbin_corerecorder_RtmpFlv_rtmpSend(JNIEnv * env, jobject obj, jbyteArray array, jint type, jint timestamp)
+jboolean Java_me_shengbin_corerecorder_RtmpFlv_rtmpSend(JNIEnv * env, jobject obj, jbyteArray array, jint type, jint timestamp)
 {
 	int frame_type;
 	if (type == 8) frame_type = RTMP_PACKET_TYPE_AUDIO;
@@ -70,8 +69,9 @@ void Java_me_shengbin_corerecorder_RtmpFlv_rtmpSend(JNIEnv * env, jobject obj, j
 	else frame_type = RTMP_PACKET_TYPE_INFO;
 	jbyte * data = env->GetByteArrayElements(array, 0);
 	jsize length = env->GetArrayLength(array);
-	send((char*)data, length, frame_type, timestamp);
+	bool ret = send((char*)data, length, frame_type, timestamp);
 	env->ReleaseByteArrayElements(array,data,0);
+	return ret;
 }
 
 void Java_me_shengbin_corerecorder_RtmpFlv_rtmpClose(JNIEnv * env, jobject obj)

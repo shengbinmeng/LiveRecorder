@@ -13,13 +13,15 @@ import android.util.Log;
 public class FileStreamOutput implements StreamOutput {
 	private static final String TAG = "FileStreamOutput";
 	private OutputStream mVideoOutStream = null, mAudioOutStream = null;
-	public void open(String path) {
+	public boolean open(String path) {
 		try {
 			mVideoOutStream = new FileOutputStream(new File(path + "/video.avc"));
 			mAudioOutStream = new FileOutputStream(new File(path + "/audio.aac"));
+			return true;
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		}
 	}
 	
