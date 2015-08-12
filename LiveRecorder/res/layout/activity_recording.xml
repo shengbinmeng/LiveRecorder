@@ -3,8 +3,8 @@
 		android:id="@+id/camera_preview"
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent"
-		android:orientation="horizontal" >
-	 
+		android:orientation="horizontal"
+		android:background="@android:color/black">
     <RelativeLayout
         android:id="@+id/layout_text"
 	    android:layout_width="match_parent"

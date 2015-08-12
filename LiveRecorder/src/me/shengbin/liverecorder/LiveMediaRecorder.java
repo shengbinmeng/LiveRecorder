@@ -94,16 +94,16 @@ public class LiveMediaRecorder {
 		width = size.width;
 		height = size.height;
 		mPreviewHolder.addView(mPreview);
-		// Set display size to the size of our frame layout, i.e. full screen.
-		LayoutParams params = (LayoutParams) mPreviewHolder.getLayoutParams();
+		// Set display size according to the size of our holder (now is full screen).
+		int holderWidth = mActivity.getResources().getDisplayMetrics().widthPixels;
+		int holderHeight = mActivity.getResources().getDisplayMetrics().heightPixels;
 		double ratio = 1.0 * width / height;
-		int displayWidth = params.width;
-		int displayHeight = (int) (displayWidth * ratio);
-		if (displayHeight > params.height) {
-			displayHeight = params.height;
-			displayWidth = (int) (displayHeight / ratio);
+		int displayWidth = holderWidth;
+		int displayHeight = (int) (displayWidth / ratio);
+		if (displayHeight > holderHeight) {
+			displayHeight = holderHeight;
+			displayWidth = (int) (displayHeight * ratio);
 		}
-
 		mPreview.setDisplaySize(displayWidth, displayHeight);
 		
 		mCoreRecorder = new CoreRecorder();
