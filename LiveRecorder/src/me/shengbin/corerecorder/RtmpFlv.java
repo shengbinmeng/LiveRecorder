@@ -1,7 +1,6 @@
 package me.shengbin.corerecorder;
 
 import android.media.MediaCodec;
-import android.media.MediaFormat;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -142,7 +141,8 @@ public class RtmpFlv {
     /**
      * stop the muxer, disconnect HTTP connection from SRS.
      */
-    public void stop() {
+    @SuppressWarnings("deprecation")
+	public void stop() {
         clearCache();
 
         if (worker == null) {
@@ -321,7 +321,7 @@ public class RtmpFlv {
         });
         while (nb_videos > 1 && nb_audios > 1) {
             SrsFlvFrame frame = cache.remove(0);
-            ByteBuffer buffer = ByteBuffer.allocate(15 + frame.tag.size);
+            ByteBuffer buffer = ByteBuffer.allocate(frame.tag.size);
             if (frame.is_video()) {
                 nb_videos--;
             } else if (frame.is_audio()) {
@@ -573,8 +573,6 @@ public class RtmpFlv {
      * utils functions from srs.
      */
     public class SrsUtils {
-        private final static String TAG = "SrsMuxer";
-
         public boolean srs_bytes_equals(byte[] a, byte[]b) {
             if ((a == null || b == null) && (a != null || b != null)) {
                 return false;
