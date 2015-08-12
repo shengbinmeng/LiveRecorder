@@ -9,25 +9,46 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 
 
 public class MainActivity extends Activity {
 
+	private EditText mEditOptions = null;
+	private EditText mEditAddress = null;
+	private final static String DEFAULT_OPTIONS = "videoBitrate:200 audioBitrate:20 videoSize:640x480";
+	private final static String DEFAULT_SERVER = "rtmp://123.56.150.52/origin/";
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Button loginButton = (Button) this.findViewById(R.id.button_launch);
-        loginButton.setOnClickListener(new OnClickListener(){
+        Button launchButton = (Button) this.findViewById(R.id.button_launch);
+        launchButton.setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View v) {
-				startRecording();
+				launchRecording();
 			}
         });
+        mEditOptions = (EditText) this.findViewById(R.id.edit_options);
+        mEditOptions.setText(DEFAULT_OPTIONS);
+        mEditAddress = (EditText) this.findViewById(R.id.edit_address);
+        String serial = "test";
+        try {
+            serial = android.os.Build.class.getField("SERIAL").get(null).toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String address = DEFAULT_SERVER + serial;
+        mEditAddress.setText(address);
     }
     
-    private void startRecording() {
+    private void launchRecording() {
+    	String options = mEditOptions.getText().toString();
+    	String address = mEditAddress.getText().toString();
     	Intent i = new Intent(this, RecordingActivity.class);
+    	i.putExtra("me.shengbin.livrecorder.Options", options);
+    	i.putExtra("me.shengbin.livrecorder.Address", address);
     	startActivity(i);
     }
 

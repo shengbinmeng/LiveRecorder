@@ -50,8 +50,10 @@ public class RecordingActivity extends Activity implements LiveMediaRecorder.Cal
 		FrameLayout cameraPreview = (FrameLayout) findViewById(R.id.camera_preview);
 		mRecorder = new LiveMediaRecorder(this, cameraPreview);
 		mRecorder.addCallback(this);
+		String options = this.getIntent().getStringExtra("me.shengbin.livrecorder.Options");
+		String address = this.getIntent().getStringExtra("me.shengbin.livrecorder.Address");
 		try {
-			mRecorder.open();
+			mRecorder.open(options, address);
 		} catch (Exception e) {
 			e.printStackTrace();
 			showAlert(getResources().getString(R.string.error), getResources().getString(R.string.open_failed) + e.getLocalizedMessage());

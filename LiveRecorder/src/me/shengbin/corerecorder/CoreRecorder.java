@@ -58,7 +58,13 @@ public class CoreRecorder {
 		mAudioEncoder.open(mSampleRate, mChannelCount, mAudioBitrate);
 		mVideoEncoder = new HardwareVideoEncoder();
 		mVideoEncoder.open(mWidth, mHeight, mFrameRate, mVideoBitrate);
-		mOutput = new LiveStreamOutput();
+		if (mOutputAddress.startsWith("rtmp://")) {
+			mOutput = new LiveStreamOutput();
+		} else if (mOutputAddress.startsWith("/")) {
+			mOutput = new FileStreamOutput();
+		} else {
+			throw new Exception("Do not know how to output."); 
+		}
 		mOutput.open(mOutputAddress);
 		mAudioEncoder.setOutput(mOutput);
 		mVideoEncoder.setOutput(mOutput);

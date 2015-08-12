@@ -18,4 +18,6 @@
     <string name="please_wait">Please wait a moment&#8230;</string>
     <string name="video_size">Video size</string>
     <string name="frame_rate">Frame rate</string>
+    <string name="options">Recording options:</string>
+    <string name="address">Output address:</string>
 </resources>

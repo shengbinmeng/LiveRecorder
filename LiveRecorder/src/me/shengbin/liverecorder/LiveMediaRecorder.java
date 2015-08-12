@@ -41,7 +41,7 @@ public class LiveMediaRecorder {
 		mCallbackList = new ArrayList<Callback>();
 	}
 	
-	public void open() throws Exception {
+	public void open(String options, String address) throws Exception {
 		// Audio parameters are set here.
 		int sampleRate = 44100;
 		int channelConfig = AudioFormat.CHANNEL_IN_STEREO;
@@ -68,8 +68,24 @@ public class LiveMediaRecorder {
 		LayoutParams params = (LayoutParams) mPreviewHolder.getLayoutParams();
 		mPreview.setDisplaySize(params.width, params.height);
 		
+		int videoBitrate = 200000, audioBitrate = 20000, width = 640, height = 480;
+		String[] parts = options.split(" ");
+		for(int i = 0; i < parts.length; i++) {
+			String part = parts[i];
+			String[] pair = part.split(":");
+			String name = pair[0], value = pair[1];
+			if (name.equalsIgnoreCase("videoBitrate")) {
+				videoBitrate = Integer.parseInt(value) * 1000;
+			} else if (name.equalsIgnoreCase("audioBitrate")) {
+				audioBitrate = Integer.parseInt(value) * 1000;
+			} else if (name.equalsIgnoreCase("videoSize")) {
+				String size[] = value.split("x");
+				width = Integer.parseInt(size[0]);
+				height = Integer.parseInt(size[1]);
+			}
+		}
 		mCoreRecorder = new CoreRecorder();
-		mCoreRecorder.configure(sampleRate, 2, 20000, 640, 480, 25, 200000, "rtmp://123.56.150.52/origin/test");
+		mCoreRecorder.configure(sampleRate, 2, videoBitrate, width, height, 25, audioBitrate, address);
 		
 		mPrepared = true;
 	}
