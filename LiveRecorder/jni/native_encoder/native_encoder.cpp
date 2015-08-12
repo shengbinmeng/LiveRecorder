@@ -36,14 +36,20 @@ int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height, jint
 	x264_param_default(&param);
 	if( x264_param_default_preset( &param, "veryfast", tune ) < 0 )
 		return -1;
-	x264_param_parse( &param, "qp", "30" );
-//	x264_param_parse( &param, "bitrate", bitrate_str );
+//	x264_param_parse( &param, "qp", "35" );
+	//bitrate = vbv-maxrate is CBR mode.
+	x264_param_parse( &param, "bitrate", bitrate_str );
+	x264_param_parse( &param, "vbv-maxrate", bitrate_str);
+	x264_param_parse( &param, "vbv-bufsize", "2000");
+
 	x264_param_parse( &param, "fps", fps_str );
+	x264_param_parse( &param, "keyint", fps_str);
+	x264_param_parse( &param, "bframes", "0");
+
 	param.i_width = width;
 	param.i_height= height;
 
-
-	LOGD("fps_num = %d, fps_den = %d, bitrate = %d\n", param.i_fps_num, param.i_fps_den, param.rc.i_bitrate);
+	LOGD("fps_num = %d, fps_den = %d, bitrate = %d, rc method = %d\n", param.i_fps_num, param.i_fps_den, param.rc.i_bitrate, param.rc.i_rc_method);
 
 	h = x264_encoder_open( &param );
 #if OUTPUT_BS
