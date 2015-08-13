@@ -165,7 +165,6 @@ public class RtmpFlv {
 
         rtmpClose();
         started = false;
-
         Log.i(TAG, String.format("worker: muxer closed, url=%s", url));
     }
 
@@ -204,26 +203,27 @@ public class RtmpFlv {
         nb_audios = 0;
         cache.clear();
         sequenceHeaderOk = false;
-        audioSequenceHeader = null;
-        videoSequenceHeader = null;
     }
 
-    private void reconnect() throws Exception {
+    private boolean reconnect(){
         if (started)
         {
         	Log.i(TAG, "already started");
-            return;
+            return true;
         }
         Log.i(TAG, "reconnecting");
-        //disconnect();
         if (!rtmpReconnect(url))
         {
         	Log.i(TAG, "reconnecting err");
-        	return;
+        	return false;
         }
         started = true;
         Log.i(TAG, "reconnected");
         clearCache();
+        audioSequenceHeader = null;
+        videoSequenceHeader = null;
+        flv.refresh();
+        return true;
         // write 13B header
         // 9bytes header and 4bytes first previous-tag-size
         /*
@@ -250,43 +250,34 @@ public class RtmpFlv {
                     return;
                 }
                 SrsFlvFrame frame = (SrsFlvFrame)msg.obj;
-                try {
-                    // only reconnect when got keyframe.
-                	Log.i(TAG, "got frame");
-                    if (frame.is_keyframe()) {
-                    	Log.i(TAG, "got keyframe");
-                        reconnect();
-                    }
-                } catch (Exception e) {
-                    Log.e(TAG, String.format("worker: reconnect failed. e=%s", e.getMessage()));
-                    disconnect();
-                }
+                if(!started && frame.is_keyframe() && !reconnect())
+                     return;
+                
                 try {
                     // when sequence header required,
                     // adjust the dts by the current frame and sent it.
-                    if (!sequenceHeaderOk) {
-                        if (videoSequenceHeader != null) {
-                            videoSequenceHeader.dts = frame.dts;
-                        }
-                        if (audioSequenceHeader != null) {
-                            audioSequenceHeader.dts = frame.dts;
-                        }
+                    
+                	// cache the sequence header.
+                	if(!started)
+                		return;
+                    if (frame.type == SrsCodecFlvTag.Video && frame.avc_aac_type == SrsCodecVideoAVCType.SequenceHeader) {
+                        videoSequenceHeader = frame;
+                    } else if (frame.type == SrsCodecFlvTag.Audio && frame.avc_aac_type == 0) {
+                        audioSequenceHeader = frame;
+                    }
+                    
+                    if (!sequenceHeaderOk && videoSequenceHeader != null && audioSequenceHeader != null) {
+                        //videoSequenceHeader.dts = frame.dts;
+                        //audioSequenceHeader.dts = frame.dts;
                         sendFlvTag(audioSequenceHeader);
                         sendFlvTag(videoSequenceHeader);
                         sequenceHeaderOk = true;
                     }
 
                     // try to send, igore when not connected.
-                    if (sequenceHeaderOk) {
-                        sendFlvTag(frame);
-                    }
-
-                    // cache the sequence header.
-                    if (frame.type == SrsCodecFlvTag.Video && frame.avc_aac_type == SrsCodecVideoAVCType.SequenceHeader) {
-                        videoSequenceHeader = frame;
-                    } else if (frame.type == SrsCodecFlvTag.Audio && frame.avc_aac_type == 0) {
-                        audioSequenceHeader = frame;
-                    }
+                    if(sequenceHeaderOk)
+                    	sendFlvTag(frame);
+                
                 } catch (Exception e) {
                     e.printStackTrace();
                     Log.e(TAG, String.format("worker: send flv tag failed, e=%s", e.getMessage()));
@@ -991,15 +982,13 @@ public class RtmpFlv {
         private byte[] aac_specific_config;
 
         public SrsFlv() {
-            utils = new SrsUtils();
-
+        	utils = new SrsUtils();
             avc = new SrsRawH264Stream();
             h264_sps = new byte[0];
             h264_sps_changed = false;
             h264_pps = new byte[0];
             h264_pps_changed = false;
             h264_sps_pps_sent = false;
-
             aac_specific_config = null;
         }
 
@@ -1007,6 +996,14 @@ public class RtmpFlv {
          * set the handler to send message to work thread.
          * @param h the handler to send the message.
          */
+        
+        public void refresh()
+        {
+            h264_sps_changed = false;
+            h264_pps_changed = false;
+            h264_sps_pps_sent = false;
+            aac_specific_config = null;
+        }
         public void setHandler(Handler h) {
             handler = h;
         }
@@ -1157,7 +1154,6 @@ public class RtmpFlv {
             }
 
             write_h264_sps_pps(dts, pts);
-
             write_h264_ipb_frame(ibps, frame_type, dts, pts);
         }
 
@@ -1165,14 +1161,20 @@ public class RtmpFlv {
             // when sps or pps changed, update the sequence header,
             // for the pps maybe not changed while sps changed.
             // so, we must check when each video ts message frame parsed.
-            if (h264_sps_pps_sent && !h264_sps_changed && !h264_pps_changed) {
-                return;
-            }
-
+            
             // when not got sps/pps, wait.
             if (h264_pps.length <= 0 || h264_sps.length <= 0) {
                 return;
             }
+            
+            if (h264_sps_pps_sent && !h264_sps_changed && !h264_pps_changed) {
+                return;
+            }
+            
+            // reset sps and pps.
+            h264_sps_changed = false;
+            h264_pps_changed = false;
+            h264_sps_pps_sent = true;
 
             // h264 raw to h264 packet.
             ArrayList<SrsFlvFrameBytes> frames = new ArrayList<SrsFlvFrameBytes>();
@@ -1187,10 +1189,7 @@ public class RtmpFlv {
             int timestamp = dts;
             rtmp_write_packet(SrsCodecFlvTag.Video, timestamp, frame_type, avc_packet_type, flv_tag);
 
-            // reset sps and pps.
-            h264_sps_changed = false;
-            h264_pps_changed = false;
-            h264_sps_pps_sent = true;
+            
             Log.i(TAG, String.format("flv: h264 sps/pps sent, sps=%dB, pps=%dB", h264_sps.length, h264_pps.length));
         }
 
