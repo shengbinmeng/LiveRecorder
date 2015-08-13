@@ -13,9 +13,6 @@ import java.util.Comparator;
 
 public class RtmpFlv {
     private String url;
-    //private HttpURLConnection conn;
-    //private BufferedOutputStream bos;
-
     private Thread worker;
     private Looper looper;
     private Handler handler;
@@ -41,6 +38,7 @@ public class RtmpFlv {
     }
 
     public native boolean rtmpInit(String url);
+    public native boolean rtmpReconnect(String url);
     public native void rtmpClose();
     public native boolean rtmpSend(byte[] array, int type, int timestamp);
 
@@ -63,10 +61,10 @@ public class RtmpFlv {
     {
     	boolean suc = rtmpInit(url);
         if(!suc) {
-            Log.v(TAG,"init failed");
+            Log.i(TAG,"init failed");
         } else {
         	started = true;
-            Log.v(TAG,"init succeed");
+            Log.i(TAG,"init succeed");
             Log.i(TAG, String.format("worker: muxer opened, url=%s", url));
         }
         return suc;
@@ -206,14 +204,25 @@ public class RtmpFlv {
         nb_audios = 0;
         cache.clear();
         sequenceHeaderOk = false;
+        audioSequenceHeader = null;
+        videoSequenceHeader = null;
     }
 
     private void reconnect() throws Exception {
         if (started)
+        {
+        	Log.i(TAG, "already started");
             return;
-        disconnect();
-        if (!RtmpConnect())
+        }
+        Log.i(TAG, "reconnecting");
+        //disconnect();
+        if (!rtmpReconnect(url))
+        {
+        	Log.i(TAG, "reconnecting err");
         	return;
+        }
+        started = true;
+        Log.i(TAG, "reconnected");
         clearCache();
         // write 13B header
         // 9bytes header and 4bytes first previous-tag-size
@@ -227,7 +236,6 @@ public class RtmpFlv {
         };
         */
         //rtmpSend(flv_header,18,0);
-        
     }
 
     private void cycle() throws Exception {
@@ -244,7 +252,9 @@ public class RtmpFlv {
                 SrsFlvFrame frame = (SrsFlvFrame)msg.obj;
                 try {
                     // only reconnect when got keyframe.
+                	Log.i(TAG, "got frame");
                     if (frame.is_keyframe()) {
+                    	Log.i(TAG, "got keyframe");
                         reconnect();
                     }
                 } catch (Exception e) {
@@ -285,7 +295,6 @@ public class RtmpFlv {
             }
         };
         flv.setHandler(handler);
-
         Looper.loop();
     }
 
@@ -368,6 +377,7 @@ public class RtmpFlv {
             {
             	Log.i(TAG, "worker: sending err");
             	started = false;
+            	return;
             }
             if (frame.is_keyframe()) {
                 Log.i(TAG, String.format("worker: send key frame type=%d, dts=%d, size=%dB, tag_size=%#x, time=%#x",
@@ -895,9 +905,6 @@ public class RtmpFlv {
             // reset the buffer.
             flv_tag.frame.rewind();
 
-            //Log.i(TAG, String.format("flv tag muxed, %dB", flv_tag.size));
-            //SrsHttpFlv.srs_print_bytes(TAG, flv_tag.frame, 128);
-
             return flv_tag;
         }
 
@@ -937,7 +944,6 @@ public class RtmpFlv {
                     RtmpFlv.srs_print_bytes(TAG, tbbs, 16);
                     RtmpFlv.srs_print_bytes(TAG, bb.slice(), 16);
                 }
-                //Log.i(TAG, String.format("annexb match %d bytes", tbb.size));
                 break;
             }
 
@@ -1049,12 +1055,9 @@ public class RtmpFlv {
                 // dependsOnCoreCoder; 1 bslbf
                 // extensionFlag; 1 bslbf
                 frame[3] = ch;
-
                 aac_specific_config = frame;
                 aac_packet_type = 0; // 0 = AAC sequence header
-                Log.v("rtmp", "aac_specific_config");
             } else {
-            	Log.v("rtmp", frame.length + " " + bb.capacity());
                 bb.get(frame, 2, frame.length - 2);
             }
 
@@ -1194,17 +1197,10 @@ public class RtmpFlv {
         private void write_h264_ipb_frame(ArrayList<SrsFlvFrameBytes> ibps, int frame_type, int dts, int pts) {
             // when sps or pps not sent, ignore the packet.
             // @see https://github.com/simple-rtmp-server/srs/issues/203
-            if (!h264_sps_pps_sent) {
+            if (!h264_sps_pps_sent)
                 return;
-            }
-
             int avc_packet_type = SrsCodecVideoAVCType.NALU;
             SrsFlvFrameBytes flv_tag = avc.mux_avc2flv(ibps, frame_type, avc_packet_type, dts, pts);
-
-            if (frame_type == SrsCodecVideoAVCFrame.KeyFrame) {
-                //Log.i(TAG, String.format("flv: keyframe %dB, dts=%d", flv_tag.size, dts));
-            }
-
             // the timestamp in rtmp message header is dts.
             int timestamp = dts;
             rtmp_write_packet(SrsCodecFlvTag.Video, timestamp, frame_type, avc_packet_type, flv_tag);
@@ -1229,7 +1225,6 @@ public class RtmpFlv {
             msg.what = SrsMessageType.FLV;
             msg.obj = frame;
             handler.sendMessage(msg);
-            //Log.i(TAG, String.format("flv: enqueue frame type=%d, dts=%d, size=%dB", frame.type, frame.dts, frame.tag.size));
         }
     }
 }

@@ -15,6 +15,7 @@ extern "C" {
 #endif
 
 JNIEXPORT jboolean JNICALL Java_me_shengbin_corerecorder_RtmpFlv_rtmpInit(JNIEnv * env, jobject obj, jstring url);
+JNIEXPORT jboolean JNICALL Java_me_shengbin_corerecorder_RtmpFlv_rtmpReconnect(JNIEnv * env, jobject obj, jstring url);
 JNIEXPORT jboolean JNICALL Java_me_shengbin_corerecorder_RtmpFlv_rtmpSend(JNIEnv * env, jobject obj, jbyteArray array, jint type, jint timestamp);
 JNIEXPORT void JNICALL Java_me_shengbin_corerecorder_RtmpFlv_rtmpClose(JNIEnv * env, jobject obj);
 

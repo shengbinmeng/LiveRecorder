@@ -7,12 +7,11 @@
 
 static RTMP *rtmp = NULL;
 
-jboolean Java_me_shengbin_corerecorder_RtmpFlv_rtmpInit(JNIEnv * env, jobject obj, jstring url)
+bool init(char * rtmp_url)
 {
-	char * rtmp_url = (char*)env->GetStringUTFChars(url, 0);
-	LOGI("url %s",rtmp_url);
 	rtmp = RTMP_Alloc();
 	RTMP_Init(rtmp);
+	rtmp->Link.timeout = 8;
 	int err = RTMP_SetupURL(rtmp, rtmp_url);
 	if (err <= 0)
 	{
@@ -33,6 +32,12 @@ jboolean Java_me_shengbin_corerecorder_RtmpFlv_rtmpInit(JNIEnv * env, jobject ob
 		return false;
 	}
 	return true;
+}
+
+void close()
+{
+	RTMP_Close(rtmp);
+	RTMP_Free(rtmp);
 }
 
 bool send(char * buf, int bufLen, int type, unsigned int timestamp)
@@ -61,6 +66,20 @@ bool send(char * buf, int bufLen, int type, unsigned int timestamp)
 	return ret;
 }
 
+jboolean Java_me_shengbin_corerecorder_RtmpFlv_rtmpInit(JNIEnv * env, jobject obj, jstring url)
+{
+	char * rtmp_url = (char*)env->GetStringUTFChars(url, 0);
+	LOGI("url %s",rtmp_url);
+	return init(rtmp_url);
+}
+
+jboolean Java_me_shengbin_corerecorder_RtmpFlv_rtmpReconnect(JNIEnv * env, jobject obj, jstring url)
+{
+	char * rtmp_url = (char*)env->GetStringUTFChars(url, 0);
+	close();
+	return init(rtmp_url);
+}
+
 jboolean Java_me_shengbin_corerecorder_RtmpFlv_rtmpSend(JNIEnv * env, jobject obj, jbyteArray array, jint type, jint timestamp)
 {
 	int frame_type;
@@ -78,6 +97,5 @@ void Java_me_shengbin_corerecorder_RtmpFlv_rtmpClose(JNIEnv * env, jobject obj)
 {
 	if(rtmp == NULL)
 		return;
-	RTMP_Close(rtmp);
-	RTMP_Free(rtmp);
+	close();
 }
