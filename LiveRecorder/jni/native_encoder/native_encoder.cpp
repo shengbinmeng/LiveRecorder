@@ -21,6 +21,7 @@ int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height, jint
 	char bitrate_str[20];
 	char fps_str[20];
 	char vbv_bufsize_str[20];
+	char vbv_maxrate[20];
 	int x264_bitrate = bitrate/1000;
 	int b_cbr = 0;
 
@@ -29,14 +30,14 @@ int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height, jint
 
 	int_to_str(fps, fps_str);
 	int_to_str(x264_bitrate, bitrate_str);
+	int_to_str(x264_bitrate*2, vbv_maxrate);
 	int_to_str(x264_bitrate/fps, vbv_bufsize_str);
 
 	if( x264_param_default_preset( &param, "veryfast", "zerolatency" ) < 0 )
 		return -1;
 
-	//bitrate = vbv-maxrate is CBR mode.
 	x264_param_parse( &param, "bitrate", bitrate_str );
-	x264_param_parse( &param, "vbv-maxrate", bitrate_str);
+	x264_param_parse( &param, "vbv-maxrate", vbv_maxrate);
 	x264_param_parse( &param, "vbv-bufsize", b_cbr ? vbv_bufsize_str : bitrate_str);
 
 	x264_param_parse( &param, "fps", fps_str );
