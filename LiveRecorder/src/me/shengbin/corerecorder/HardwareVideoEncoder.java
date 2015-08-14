@@ -12,7 +12,7 @@ public class HardwareVideoEncoder implements VideoEncoder {
 	private static final String TAG = "HardwareVideoEncoder";
 			
 	private static final String MIMETYPE_VIDEO_AVC = "video/avc"; // H.264 Advanced Video Coding
-    private static final int IFRAME_INTERVAL = 2; // 2 seconds between I-frames
+    private static final int IFRAME_INTERVAL = 1; // seconds between I-frames
     private static final int TIMEOUT_INPUT = 2000000; // 2s
     private static final int TIMEOUT_OUTPUT = 20000; // 20ms
     

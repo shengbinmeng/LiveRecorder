@@ -84,8 +84,8 @@ public class CoreRecorder {
 		mAudioEncoder.open(mSampleRate, mChannelCount, mAudioBitrate);
 		mVideoEncoder.open(mWidth, mHeight, mFrameRate, mVideoBitrate);
 		
-		QualityController controller = new QualityController(this);
-		controller.start();
+		//QualityController controller = new QualityController(this);
+		//controller.start();
 	}
 	
 	public void stop() {
