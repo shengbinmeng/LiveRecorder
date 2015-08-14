@@ -11,21 +11,13 @@ public class LiveStreamOutput implements StreamOutput {
 	private RtmpFlv muxer;
 	
 	@Override
-	public boolean open(String url) {
+	public void open(String url) throws IOException {
 		muxer = new RtmpFlv(url, RtmpFlv.OutputFormat.MUXER_OUTPUT_RTMP);
-		if(!muxer.RtmpConnect())
-		{
-			Log.i(TAG, "rtmp connect failed");
-			return false;
+		if (!muxer.RtmpConnect()) {
+			Log.e(TAG, "rtmp connect failed");
+			throw new IOException("rtmp connect failed");
 		}
-		try {
-			muxer.start();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
-		}
-		return true;
+		muxer.start();
 	}
 	
 	@Override

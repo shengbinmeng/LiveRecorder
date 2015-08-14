@@ -12,18 +12,11 @@ import android.util.Log;
 public class FileStreamOutput implements StreamOutput {
 	private static final String TAG = "FileStreamOutput";
 	private OutputStream mVideoOutStream = null, mAudioOutStream = null;
-	public boolean open(String path) {
-		try {
+	public void open(String path) throws FileNotFoundException {
 			File pathFile = new File(path);
 			pathFile.mkdirs();
 			mVideoOutStream = new FileOutputStream(new File(path + "/video.avc"));
 			mAudioOutStream = new FileOutputStream(new File(path + "/audio.aac"));
-			return true;
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
-		}
 	}
 	
 	@Override
