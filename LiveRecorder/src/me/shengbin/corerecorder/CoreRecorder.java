@@ -110,11 +110,28 @@ public class CoreRecorder {
 		mAudioEncoder.encode(data, pts);
 	}
 	
-	public void restartWithBitrate(int bitrate) throws Exception {
-		stop();
+	public void updateBitrate(int bitrate) throws Exception {
 		mVideoBitrate = bitrate * 8/10;
 		mAudioBitrate = bitrate * 1/10;
-		start();
-		Log.i(TAG, "Restarted with vide bitrate: " + mVideoBitrate + ", and audio bitrate: " + mAudioBitrate);
-	}	
+		boolean updated = mVideoEncoder.updateBitrate(mVideoBitrate);
+		//TODO: Need to handle data received when encoders are not available.
+		if (!updated) {
+			mVideoEncoder.close();
+			if (mVideoEncoderType == EncoderType.HARDWARE_VIDEO) {
+				mVideoEncoder = new HardwareVideoEncoder();
+			} else if (mVideoEncoderType == EncoderType.SOFTWARE_VIDEO) {
+				mVideoEncoder = new SoftwareVideoEncoder();
+			}
+			mVideoEncoder.setOutput(mOutput);
+			mVideoEncoder.open(mWidth, mHeight, mFrameRate, mVideoBitrate);
+		}
+		updated = mVideoEncoder.updateBitrate(mVideoBitrate);
+		if (!updated) {
+			mAudioEncoder.close();
+			mAudioEncoder = new HardwareAudioEncoder();
+			mAudioEncoder.setOutput(mOutput);
+			mAudioEncoder.open(mSampleRate, mChannelCount, mAudioBitrate);
+		}
+		Log.i(TAG, "Updated with video bitrate: " + mVideoBitrate + ", and audio bitrate: " + mAudioBitrate);
+	}
 }

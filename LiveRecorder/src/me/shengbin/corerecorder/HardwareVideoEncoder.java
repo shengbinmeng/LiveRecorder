@@ -247,4 +247,10 @@ public class HardwareVideoEncoder implements VideoEncoder {
 		mOutput = output;
 	}
 
+	@Override
+	public boolean updateBitrate(int bitrate) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

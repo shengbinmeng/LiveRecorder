@@ -70,5 +70,11 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 	public void setOutput(StreamOutput output) {
 		mOutput = output;
 	}
+	
+	@Override
+	public boolean updateBitrate(int bitrate) {
+		//TODO: Reconfigure the native encoder.
+		return true;		
+	}
 
 }
