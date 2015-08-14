@@ -83,6 +83,9 @@ public class CoreRecorder {
 		
 		mAudioEncoder.open(mSampleRate, mChannelCount, mAudioBitrate);
 		mVideoEncoder.open(mWidth, mHeight, mFrameRate, mVideoBitrate);
+		
+		QualityController controller = new QualityController(this);
+		controller.start();
 	}
 	
 	public void stop() {
@@ -125,7 +128,7 @@ public class CoreRecorder {
 			mVideoEncoder.setOutput(mOutput);
 			mVideoEncoder.open(mWidth, mHeight, mFrameRate, mVideoBitrate);
 		}
-		updated = mVideoEncoder.updateBitrate(mVideoBitrate);
+		updated = mAudioEncoder.updateBitrate(mAudioBitrate);
 		if (!updated) {
 			mAudioEncoder.close();
 			mAudioEncoder = new HardwareAudioEncoder();

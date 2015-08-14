@@ -5,4 +5,5 @@ public interface AudioEncoder {
 	void encode(byte[] data, long presentationTimeUs);
 	void close();
 	void setOutput(StreamOutput output);
+	boolean updateBitrate(int bitrate);
 }

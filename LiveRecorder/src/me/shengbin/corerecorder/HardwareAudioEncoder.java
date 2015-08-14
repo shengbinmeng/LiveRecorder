@@ -108,4 +108,10 @@ public class HardwareAudioEncoder implements AudioEncoder {
 	public void setOutput(StreamOutput output) {
 		mOutput = output;
 	}
+
+	@Override
+	public boolean updateBitrate(int bitrate) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }
