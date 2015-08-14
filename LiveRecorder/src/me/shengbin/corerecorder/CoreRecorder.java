@@ -9,7 +9,6 @@ public class CoreRecorder {
 	}
 	
 	private static final String TAG = "CoreRecorder";
-	
 	private VideoEncoder mVideoEncoder = null;
 	private AudioEncoder mAudioEncoder = null;
 	private StreamOutput mOutput = null;
@@ -63,16 +62,6 @@ public class CoreRecorder {
 				", " + mWidth + ", " + mHeight + ", " + mFrameRate + ", " + mVideoBitrate + ", " + mOutputAddress;
 		Log.i(TAG, s);
 		
-		mAudioEncoder = new HardwareAudioEncoder();
-		mAudioEncoder.open(mSampleRate, mChannelCount, mAudioBitrate);
-		
-		if (mVideoEncoderType == EncoderType.HARDWARE_VIDEO) {
-			mVideoEncoder = new HardwareVideoEncoder();
-		} else if (mVideoEncoderType == EncoderType.SOFTWARE_VIDEO) {
-			mVideoEncoder = new SoftwareVideoEncoder();
-		}
-		mVideoEncoder.open(mWidth, mHeight, mFrameRate, mVideoBitrate);
-		
 		if (mOutputAddress.startsWith("rtmp://")) {
 			mOutput = new LiveStreamOutput();
 		} else if (mOutputAddress.startsWith("/")) {
@@ -81,8 +70,19 @@ public class CoreRecorder {
 			throw new Exception("Do not know how to output."); 
 		}
 		mOutput.open(mOutputAddress);
+		
+		mAudioEncoder = new HardwareAudioEncoder();
 		mAudioEncoder.setOutput(mOutput);
+
+		if (mVideoEncoderType == EncoderType.HARDWARE_VIDEO) {
+			mVideoEncoder = new HardwareVideoEncoder();
+		} else if (mVideoEncoderType == EncoderType.SOFTWARE_VIDEO) {
+			mVideoEncoder = new SoftwareVideoEncoder();
+		}
 		mVideoEncoder.setOutput(mOutput);
+		
+		mAudioEncoder.open(mSampleRate, mChannelCount, mAudioBitrate);
+		mVideoEncoder.open(mWidth, mHeight, mFrameRate, mVideoBitrate);
 	}
 	
 	public void stop() {

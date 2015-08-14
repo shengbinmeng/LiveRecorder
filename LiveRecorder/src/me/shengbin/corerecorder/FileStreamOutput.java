@@ -14,6 +14,8 @@ public class FileStreamOutput implements StreamOutput {
 	private OutputStream mVideoOutStream = null, mAudioOutStream = null;
 	public boolean open(String path) {
 		try {
+			File pathFile = new File(path);
+			pathFile.mkdirs();
 			mVideoOutStream = new FileOutputStream(new File(path + "/video.avc"));
 			mAudioOutStream = new FileOutputStream(new File(path + "/audio.aac"));
 			return true;
