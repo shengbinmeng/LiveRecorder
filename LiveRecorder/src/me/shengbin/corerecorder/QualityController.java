@@ -5,7 +5,7 @@ import java.util.TimerTask;
 
 public class QualityController {
 	private CoreRecorder mRecorder;
-	private int count = 0;
+	private TimerTask mTimerTask = null;
 	
 	public QualityController(CoreRecorder recorder) {
 		mRecorder = recorder;
@@ -13,7 +13,7 @@ public class QualityController {
 	
 	public void start() {
 		Timer timer = new Timer();
-		TimerTask task = new TimerTask() {
+		mTimerTask = new TimerTask() {
 			@Override
 			public void run() {
 				int bandwidth = predictBandwidth();
@@ -21,7 +21,7 @@ public class QualityController {
 			}
 		};
 		// Execute the task every 10 seconds.
-		timer.scheduleAtFixedRate(task, 0, 10000);
+		timer.scheduleAtFixedRate(mTimerTask, 0, 10000);
 	}
 	
 	public void bandwidthChanged(int bandwidth) {
@@ -35,8 +35,12 @@ public class QualityController {
 	
 	private int predictBandwidth() {
 		//TODO: Predict the current bandwidth
-		//plus 1 for in case zero.
-	//	return (int) (20000 * ((System.currentTimeMillis() % 100)+1));
-		return ((count++)%2)*400000 + 100000;
+		return (int)((Math.random() % 10)+1) * 200000;
+	}
+	
+	public void stop() {
+		if (mTimerTask != null) {
+			mTimerTask.cancel();
+		}
 	}
 }

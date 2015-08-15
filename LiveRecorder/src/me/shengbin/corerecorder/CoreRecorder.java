@@ -21,6 +21,7 @@ public class CoreRecorder {
 	private int mVideoBitrate = 0;
 	private String mOutputAddress = null;
 	private int mVideoEncoderType = 0;
+	private QualityController mController = null;
 	
 	public CoreRecorder () {
 		// These are default values.
@@ -29,7 +30,7 @@ public class CoreRecorder {
 		mAudioBitrate = 20000;
 		
 		mWidth = 640;
-		mHeight = 480;
+		mHeight = 480; 
 		mFrameRate = 30;
 		mVideoBitrate = 200000;
 		
@@ -84,14 +85,15 @@ public class CoreRecorder {
 		mAudioEncoder.open(mSampleRate, mChannelCount, mAudioBitrate);
 		mVideoEncoder.open(mWidth, mHeight, mFrameRate, mVideoBitrate);
 		
-		//QualityController controller = new QualityController(this);
-		//controller.start();
+		mController = new QualityController(this);
+		mController.start();
 	}
 	
 	public void stop() {
 		mAudioEncoder.close();
 		mVideoEncoder.close();
 		mOutput.close();
+		mController.stop();
 	}
 		
 	public void videoFrameReceived(byte[] pixels, long pts) {
