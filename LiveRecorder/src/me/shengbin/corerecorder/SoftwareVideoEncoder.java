@@ -15,6 +15,7 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 	private native int native_encoder_encode(byte[] data, ByteArrayOutputStream out, long pts, long[] frameEncapsulation);
 	private native int native_encoder_encoding();
 	private native int native_encoder_close();
+	private native int native_encoder_update_bitrate(int bitrate);
 	
 	private StreamOutput mOutput = null;
 	private MediaCodec.BufferInfo mBufferInfo = new MediaCodec.BufferInfo();
@@ -73,8 +74,10 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 	
 	@Override
 	public boolean updateBitrate(int bitrate) {
-		//TODO: Reconfigure the native encoder.
-		return true;		
+		if (native_encoder_update_bitrate(bitrate) != 0)
+			return false;
+		
+		return true;
 	}
 
 }

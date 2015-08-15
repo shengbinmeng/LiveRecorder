@@ -5,6 +5,7 @@ import java.util.TimerTask;
 
 public class QualityController {
 	private CoreRecorder mRecorder;
+	private int count = 0;
 	
 	public QualityController(CoreRecorder recorder) {
 		mRecorder = recorder;
@@ -34,6 +35,8 @@ public class QualityController {
 	
 	private int predictBandwidth() {
 		//TODO: Predict the current bandwidth
-		return (int) (200 * (System.currentTimeMillis() % 5));
+		//plus 1 for in case zero.
+	//	return (int) (20000 * ((System.currentTimeMillis() % 100)+1));
+		return ((count++)%2)*400000 + 100000;
 	}
 }

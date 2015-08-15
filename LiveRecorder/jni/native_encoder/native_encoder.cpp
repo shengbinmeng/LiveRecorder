@@ -25,7 +25,7 @@ int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height, jint
 	int x264_bitrate = bitrate/1000;
 	int b_cbr = 0;
 
-	if (bitrate <= 0 || fps <= 0)
+	if (x264_bitrate <= 0 || fps <= 0)
 		return -1;
 
 	int_to_str(fps, fps_str);
@@ -139,7 +139,7 @@ int native_encoder_encode(JNIEnv *env, jobject thiz, jbyteArray pixels, jobject 
 	return i_nal_size;
 
 end:
-	if ( NULL != bytebuf )
+	if (NULL != bytebuf)
 		env->DeleteLocalRef(bytebuf);
 	return -1;
 }
@@ -158,10 +158,37 @@ int native_encoder_encoding(JNIEnv *env, jobject thiz)
 
 int native_encoder_close()
 {
-	LOGI("close encoder \n");
-	if( h )
+	LOGD("close encoder \n");
+	if (h)
 		x264_encoder_close( h );
 	return 0;
+}
+
+int native_encoder_update_bitrate(JNIEnv *env, jobject thiz, jint bitrate)
+{
+	char bitrate_str[20];
+	char vbv_maxrate[20];
+	int x264_bitrate = bitrate/1000;
+	int ret;
+	LOGI("x264_bitrate = %d", x264_bitrate);
+	if (h == NULL)
+		return -1;
+
+	if (x264_bitrate <= 0)
+		return -1;
+
+	int_to_str(x264_bitrate, bitrate_str);
+	int_to_str(x264_bitrate*2, vbv_maxrate);
+
+	x264_param_parse( &param, "bitrate", bitrate_str );
+	x264_param_parse( &param, "vbv-maxrate", vbv_maxrate);
+	x264_param_parse( &param, "vbv-bufsize", bitrate_str);
+
+	LOGI("reconfig: fps_num = %d, fps_den = %d, bitrate = %d, rc method = %d, vbv_bufsize = %d, vbv_maxrate = %d\n", param.i_fps_num, param.i_fps_den, param.rc.i_bitrate, param.rc.i_rc_method, param.rc.i_vbv_buffer_size, param.rc.i_vbv_max_bitrate);
+
+	ret = x264_encoder_reconfig(h, &param);
+
+	return ret;
 }
 
 static JNINativeMethod gMethods[] = {
@@ -169,6 +196,7 @@ static JNINativeMethod gMethods[] = {
     {"native_encoder_encode", "([BLjava/io/ByteArrayOutputStream;J[J)I", (void *)native_encoder_encode},
 	{"native_encoder_encoding", "()I", (void *)native_encoder_encoding},
     {"native_encoder_close", "()I", (void *)native_encoder_close},
+	{"native_encoder_update_bitrate", "(I)I", (void *)native_encoder_update_bitrate},
 };
 
 int register_natives(JNIEnv *env)
