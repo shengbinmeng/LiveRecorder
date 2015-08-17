@@ -35,7 +35,7 @@ public class QualityController {
 	
 	private int predictBandwidth() {
 		//TODO: Predict the current bandwidth
-		return (int)((Math.random() % 10)+1) * 200000;
+		return (int)((Math.random()*10)+1) * 100000;
 	}
 	
 	public void stop() {
