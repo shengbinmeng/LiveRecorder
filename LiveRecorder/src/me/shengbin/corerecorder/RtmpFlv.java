@@ -61,7 +61,7 @@ public class RtmpFlv {
     {
     	boolean suc = rtmpInit(url);
         if(!suc) {
-            Log.i(TAG,"init failed");
+            Log.e(TAG,"init failed");
         } else {
         	started = true;
             Log.i(TAG,"init succeed");
@@ -83,12 +83,8 @@ public class RtmpFlv {
         for (i = 0; i < size && i < max; i++) {
             sb.append(String.format("0x%s ", Integer.toHexString(bb.get(i) & 0xFF)));
             if (((i + 1) % bytes_in_line) == 0) {
-                Log.i(tag, String.format("%03d-%03d: %s", i / bytes_in_line * bytes_in_line, i, sb.toString()));
                 sb = new StringBuilder();
             }
-        }
-        if (sb.length() > 0) {
-            Log.i(tag, String.format("%03d-%03d: %s", size / bytes_in_line * bytes_in_line, i - 1, sb.toString()));
         }
     }
     public static void srs_print_bytes(String tag, byte[] bb, int size) {
@@ -99,12 +95,8 @@ public class RtmpFlv {
         for (i = 0; i < size && i < max; i++) {
             sb.append(String.format("0x%s ", Integer.toHexString(bb[i] & 0xFF)));
             if (((i + 1) % bytes_in_line) == 0) {
-                Log.i(tag, String.format("%03d-%03d: %s", i / bytes_in_line * bytes_in_line, i, sb.toString()));
                 sb = new StringBuilder();
             }
-        }
-        if (sb.length() > 0) {
-            Log.i(tag, String.format("%03d-%03d: %s", size / bytes_in_line * bytes_in_line, i - 1, sb.toString()));
         }
     }
 
@@ -119,7 +111,7 @@ public class RtmpFlv {
                     cycle();
                 } catch (InterruptedException ie) {
                 } catch (Exception e) {
-                    Log.i(TAG, "worker: thread exception.");
+                    Log.e(TAG, "worker: thread exception.");
                     e.printStackTrace();
                 }
             }
@@ -156,7 +148,7 @@ public class RtmpFlv {
             try {
                 worker.join();
             } catch (InterruptedException e) {
-                Log.i(TAG, "worker: join thread failed.");
+                Log.e(TAG, "worker: join thread failed.");
                 e.printStackTrace();
                 worker.stop();
             }
@@ -175,9 +167,6 @@ public class RtmpFlv {
      * @param bufferInfo The buffer information related to this sample.
      */
     public void writeSampleData(int type, ByteBuffer byteBuf, MediaCodec.BufferInfo bufferInfo) throws Exception {
-        //Log.i(TAG, String.format("dumps the %s stream %dB, pts=%d", (trackIndex == VIDEO_TRACK) ? "Vdieo" : "Audio", bufferInfo.size, bufferInfo.presentationTimeUs / 1000));
-        //SrsHttpFlv.srs_print_bytes(TAG, byteBuf, bufferInfo.size);
-
         if (bufferInfo.offset > 0) {
             Log.w(TAG, String.format("encoded frame %dB, offset=%d pts=%dms",
                     bufferInfo.size, bufferInfo.offset, bufferInfo.presentationTimeUs / 1000
@@ -328,14 +317,6 @@ public class RtmpFlv {
                 nb_audios--;
             }
 
-            if (frame.is_keyframe()) {
-                Log.i(TAG, String.format("worker: got key frame type=%d, dts=%d, size=%dB, videos=%d, audios=%d",
-                        frame.type, frame.dts, frame.tag.size, nb_videos, nb_audios));
-            } else {
-                Log.i(TAG, String.format("worker: got frame type=%d, dts=%d, size=%dB, videos=%d, audios=%d",
-                   frame.type, frame.dts, frame.tag.size, nb_videos, nb_audios));
-            }
-
             // write the 11B flv tag header
             ByteBuffer th = ByteBuffer.allocate(11);
             // Reserved UB [2]
@@ -366,18 +347,9 @@ public class RtmpFlv {
             
             if(!rtmpSend(buffer.array(),frame.type,frame.dts))
             {
-            	Log.i(TAG, "worker: sending err");
+            	Log.e(TAG, "worker: sending err");
             	started = false;
             	return;
-            }
-            if (frame.is_keyframe()) {
-                Log.i(TAG, String.format("worker: send key frame type=%d, dts=%d, size=%dB, tag_size=%#x, time=%#x",
-                        frame.type, frame.dts, frame.tag.size, tag_size, time
-                ));
-            } else {
-                Log.i(TAG, String.format("worker: send frame type=%d, dts=%d, size=%dB, tag_size=%#x, time=%#x",
-                        frame.type, frame.dts, frame.tag.size, tag_size, time
-                ));
             }
         }
     }
@@ -704,7 +676,7 @@ public class RtmpFlv {
      */
     class SrsRawH264Stream {
         private SrsUtils utils;
-        private final static String TAG = "SrsMuxer";
+        private final static String TAG = "RTMP_FLV";
 
         public SrsRawH264Stream() {
             utils = new SrsUtils();
@@ -749,12 +721,7 @@ public class RtmpFlv {
             // from H.264-AVC-ISO_IEC_14496-15.pdf, page 20
             // NALUnitLength
             nalu_header.frame.putInt(NAL_unit_length);
-
-            // reset the buffer.
             nalu_header.frame.rewind();
-
-            //Log.i(TAG, String.format("mux ibp frame %dB", frame.size));
-            //SrsHttpFlv.srs_print_bytes(TAG, nalu_header.frame, 16);
 
             return nalu_header;
         }
@@ -907,7 +874,6 @@ public class RtmpFlv {
                 // about annexb, @see H.264-AVC-ISO_IEC_14496-10.pdf, page 211.
                 SrsAnnexbSearch tbbsc = utils.srs_avc_startswith_annexb(bb, bi);
                 if (!tbbsc.match || tbbsc.nb_start_code < 3) {
-                    Log.e(TAG, "annexb not match.");
                     RtmpFlv.srs_print_bytes(TAG, bb, 16);
                     throw new Exception(String.format("annexb not match for %dB, pos=%d", bi.size, bb.position()));
                 }
@@ -931,7 +897,6 @@ public class RtmpFlv {
 
                 tbb.size = bb.position() - pos;
                 if (bb.position() < bi.size) {
-                    Log.i(TAG, String.format("annexb multiple match ok, pts=%d", bi.presentationTimeUs / 1000));
                     RtmpFlv.srs_print_bytes(TAG, tbbs, 16);
                     RtmpFlv.srs_print_bytes(TAG, bb.slice(), 16);
                 }
@@ -1097,7 +1062,6 @@ public class RtmpFlv {
 
             ArrayList<SrsFlvFrameBytes> ibps = new ArrayList<SrsFlvFrameBytes>();
             int frame_type = SrsCodecVideoAVCFrame.InterFrame;
-            //Log.i(TAG, String.format("video %d/%d bytes, offset=%d, position=%d, pts=%d", bb.remaining(), bi.size, bi.offset, bb.position(), pts));
 
             // send each frame.
             while (bb.position() < bi.size) {
@@ -1107,9 +1071,6 @@ public class RtmpFlv {
                 // H.264-AVC-ISO_IEC_14496-10.pdf, page 44.
                 //  7: SPS, 8: PPS, 5: I Frame, 1: P Frame
                 int nal_unit_type = (int)(frame.frame.get(0) & 0x1f);
-                if (nal_unit_type == SrsAvcNaluType.SPS || nal_unit_type == SrsAvcNaluType.PPS) {
-                    Log.i(TAG, String.format("annexb demux %dB, pts=%d, frame=%dB, nalu=%d", bi.size, pts, frame.size, nal_unit_type));
-                }
 
                 // for IDR frame, the frame is keyframe.
                 if (nal_unit_type == SrsAvcNaluType.IDR) {
@@ -1187,10 +1148,7 @@ public class RtmpFlv {
 
             // the timestamp in rtmp message header is dts.
             int timestamp = dts;
-            rtmp_write_packet(SrsCodecFlvTag.Video, timestamp, frame_type, avc_packet_type, flv_tag);
-
-            
-            Log.i(TAG, String.format("flv: h264 sps/pps sent, sps=%dB, pps=%dB", h264_sps.length, h264_pps.length));
+            rtmp_write_packet(SrsCodecFlvTag.Video, timestamp, frame_type, avc_packet_type, flv_tag);            
         }
 
         private void write_h264_ipb_frame(ArrayList<SrsFlvFrameBytes> ibps, int frame_type, int dts, int pts) {

@@ -48,7 +48,6 @@ bool send(char * buf, int bufLen, int type, unsigned int timestamp)
 	memset(rtmp_pkt,0,sizeof(RTMPPacket));
 	RTMPPacket_Alloc(rtmp_pkt, bufLen);
 	RTMPPacket_Reset(rtmp_pkt);
-	LOGI("packet alloc");
 	rtmp_pkt->m_packetType = type;
 	rtmp_pkt->m_nBodySize = bufLen;
 	rtmp_pkt->m_nTimeStamp = timestamp;
@@ -62,7 +61,7 @@ bool send(char * buf, int bufLen, int type, unsigned int timestamp)
 	if(ret)
 		LOGI("packet sent");
 	else
-		LOGI("packet sent err");
+		LOGE("packet sent err");
 	return ret;
 }
 
