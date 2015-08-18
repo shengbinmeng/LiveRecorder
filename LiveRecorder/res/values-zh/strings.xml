@@ -18,7 +18,7 @@
     <string name="please_wait">请稍后&#8230;</string>
     <string name="video_size">视频大小</string>
     <string name="frame_rate">帧率</string>
-    <string name="options">录制选项：</string>
-    <string name="address">输出地址：</string>
+    <string name="options">录制选项:</string>
+    <string name="address">输出地址:</string>
     <string name="current_bitrate">当前码率</string>
 </resources>

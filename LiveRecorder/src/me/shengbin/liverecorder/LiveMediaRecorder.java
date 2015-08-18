@@ -160,10 +160,10 @@ public class LiveMediaRecorder {
 				if (currentTime - mCountBeginTime > 1000) {
 					double fps = mFrameCount / ((currentTime - mCountBeginTime)/1000.0);
 					String info = String.format(Locale.ENGLISH, mActivity.getResources().getString(R.string.video_size) + ": %dx%d, " + mActivity.getResources().getString(R.string.frame_rate) + ": %.2f FPS", s.width, s.height, fps);
-					info += "\n" + mActivity.getResources().getString(R.string.options) + mOptions;
-					info += "\n" + mActivity.getResources().getString(R.string.address) + mAddress;
 					info += "\n" + String.format(Locale.ENGLISH, mActivity.getResources().getString(R.string.current_bitrate) + ": audio %.2f kbps, video %.2f kbps", mCoreRecorder.getCurrentAudioBitrateKbps(), mCoreRecorder.getCurrentVideoBitrateKbps());
 					Log.i(TAG, info);
+					info += "\n" + mActivity.getResources().getString(R.string.options) + " " + mOptions;
+					info += "\n" + mActivity.getResources().getString(R.string.address) + " " + mAddress;
 					mCountBeginTime = currentTime;
 					mFrameCount = 0;
 					

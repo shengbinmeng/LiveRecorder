@@ -42,7 +42,7 @@ void close()
 
 bool send(char * buf, int bufLen, int type, unsigned int timestamp)
 {
-	LOGI("start sending");
+	LOGD("start sending");
 	RTMPPacket *rtmp_pkt;
 	rtmp_pkt = (RTMPPacket*)malloc(sizeof(RTMPPacket));
 	memset(rtmp_pkt,0,sizeof(RTMPPacket));
@@ -55,11 +55,11 @@ bool send(char * buf, int bufLen, int type, unsigned int timestamp)
 	rtmp_pkt->m_headerType = RTMP_PACKET_SIZE_LARGE;
 	rtmp_pkt->m_nInfoField2 = rtmp->m_stream_id;
 	memcpy(rtmp_pkt->m_body, buf, bufLen);
-	LOGI("length: %d", bufLen);
+	LOGD("length: %d", bufLen);
 	bool ret = RTMP_SendPacket(rtmp, rtmp_pkt, 0);
 	RTMPPacket_Free(rtmp_pkt);
 	if(ret)
-		LOGI("packet sent");
+		LOGD("packet sent");
 	else
 		LOGE("packet sent err");
 	return ret;

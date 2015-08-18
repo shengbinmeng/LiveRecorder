@@ -58,7 +58,6 @@ public class SoftwareVideoEncoder implements VideoEncoder {
 
 	@Override
 	public void close() {
-		Log.e(TAG, "Software closed was called.");
 		int presentationTimeUs = 0;
 		// Flush encoder.
 		while (native_encoder_encoding() == 1) {
