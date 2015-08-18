@@ -56,7 +56,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     	long minDiff = Long.MAX_VALUE;
     	for (int i = 0; i < l.size(); i++) {
         	Camera.Size s = l.get(i);
-        	Log.d("CameraPreview", "candidate size: " + s.width + "x" +s.height);
+        	Log.d(TAG, "candidate size: " + s.width + "x" + s.height);
         	long diff = Math.abs(s.width - width) + Math.abs(s.height - height);
         	if (diff < minDiff) {
             	minDiff = diff;
@@ -65,23 +65,28 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     	}
     	p.setPreviewSize(size.width, size.height);
     	mCamera.setParameters(p);
-    	Log.i("CameraPreview", "preview size: " + size.width + "x" + size.height);
+    	Log.i(TAG, "size: " + size.width + "x" + size.height);
     	return size;
     }
     
     public int[] preferPreviewFps (int fps) {
     	Camera.Parameters p = mCamera.getParameters();
     	List<int[]> l = p.getSupportedPreviewFpsRange();
-    	int[] r = l.get(0);
+    	int[] range = l.get(0);
+    	long minDiff = Long.MAX_VALUE;
+    	int fpsScaled = fps * 1000;
     	for (int i = 0; i < l.size(); i++) {
-    		r = l.get(i);
-    		//TODO: Choose a range according to preferred FPS.
+    		int[] r = l.get(i);
+    		Log.d(TAG, "candidate FPS range: [" + r[0] + "," + r[1] + "]");
+    		long diff = Math.abs(r[0] - fpsScaled) + Math.abs(r[1] - fpsScaled);
+        	if (diff < minDiff) {
+            	minDiff = diff;
+            	range = r;
+        	}
     	}
-    	int min = r[0];
-    	int max = r[1];
-    	p.setPreviewFpsRange(max, max);
-    	Log.i("CameraPreview", "preview FPS range: " + min + "," + max);
-    	return r;
+    	p.setPreviewFpsRange(range[0], range[1]);
+    	Log.i(TAG, "FPS range: [" + range[0] + "," + range[1] + "]");
+    	return range;
     }
    
     

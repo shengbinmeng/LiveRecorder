@@ -36,6 +36,7 @@ public class LiveMediaRecorder {
 	
 	private String mOptions = null;
 	private String mAddress = null;
+	private int[] mFpsRange = null;
 	
 	LiveMediaRecorder(Activity activity, ViewGroup previewHolder) {
 		mActivity = activity;
@@ -61,6 +62,8 @@ public class LiveMediaRecorder {
 				String size[] = value.split("x");
 				width = Integer.parseInt(size[0]);
 				height = Integer.parseInt(size[1]);
+			} else if (name.equalsIgnoreCase("frameRate")) {
+				frameRate = Integer.parseInt(value);
 			} else if (name.equalsIgnoreCase("videoEncoder")) {
 				if (value.equalsIgnoreCase("hardware")) {
 					videoEncoderType = CoreRecorder.EncoderType.HARDWARE_VIDEO;
@@ -93,7 +96,7 @@ public class LiveMediaRecorder {
 		}
 		// Create our Preview view and set it as the content of our activity.
 		mPreview = new CameraPreview(mActivity, mCamera);
-		mPreview.preferPreviewFps(frameRate);
+		mFpsRange = mPreview.preferPreviewFps(frameRate);
 		Camera.Size size = mPreview.preferPreviewSize(width, height);
 		width = size.width;
 		height = size.height;
@@ -159,7 +162,7 @@ public class LiveMediaRecorder {
 				// Update information every 1000ms (i.e. 1s).
 				if (currentTime - mCountBeginTime > 1000) {
 					double fps = mFrameCount / ((currentTime - mCountBeginTime)/1000.0);
-					String info = String.format(Locale.ENGLISH, mActivity.getResources().getString(R.string.video_size) + ": %dx%d, " + mActivity.getResources().getString(R.string.frame_rate) + ": %.2f FPS", s.width, s.height, fps);
+					String info = String.format(Locale.ENGLISH, mActivity.getResources().getString(R.string.video_size) + ": %dx%d, " + mActivity.getResources().getString(R.string.frame_rate) + ": %.2f FPS (in range [%d, %d]).", s.width, s.height, fps, mFpsRange[0]/1000, mFpsRange[1]/1000);
 					info += "\n" + String.format(Locale.ENGLISH, mActivity.getResources().getString(R.string.current_bitrate) + ": audio %.2f kbps, video %.2f kbps", mCoreRecorder.getCurrentAudioBitrateKbps(), mCoreRecorder.getCurrentVideoBitrateKbps());
 					Log.i(TAG, info);
 					info += "\n" + mActivity.getResources().getString(R.string.options) + " " + mOptions;

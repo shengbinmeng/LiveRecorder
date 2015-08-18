@@ -16,7 +16,7 @@ public class MainActivity extends Activity {
 
 	private EditText mEditOptions = null;
 	private EditText mEditAddress = null;
-	private final static String DEFAULT_OPTIONS = "videoBitrate:500 audioBitrate:20 videoSize:640x480 videoEncoder:software";
+	private final static String DEFAULT_OPTIONS = "videoBitrate:500 audioBitrate:20 videoSize:640x480 frameRate:10 videoEncoder:software";
 	private final static String DEFAULT_SERVER = "rtmp://123.56.150.52/origin/";
 	
     @Override
