@@ -33,7 +33,7 @@ int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height, jint
 	int_to_str(x264_bitrate*2, vbv_maxrate);
 	int_to_str(x264_bitrate/fps, vbv_bufsize_str);
 
-	if( x264_param_default_preset( &param, "veryfast", "zerolatency" ) < 0 )
+	if( x264_param_default_preset( &param, "superfast", "zerolatency" ) < 0 )
 		return -1;
 
 	x264_param_parse( &param, "bitrate", bitrate_str );
@@ -47,7 +47,8 @@ int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height, jint
 	param.i_height= height;
 
 	LOGD("fps_num = %d, fps_den = %d, bitrate = %d, rc method = %d\n", param.i_fps_num, param.i_fps_den, param.rc.i_bitrate, param.rc.i_rc_method);
-
+	LOGD("b_deblocking_filter = %d, i_deblocking_filter_alphac0 = %d, i_deblocking_filter_beta = %d", param.b_deblocking_filter, param.i_deblocking_filter_alphac0, param.i_deblocking_filter_beta);
+	LOGD("b_cabac = %d, i_threads = %d", param.b_cabac, param.i_threads);
 	h = x264_encoder_open( &param );
 
 	if (!h)
