@@ -33,10 +33,13 @@ public class LiveMediaRecorder {
 	private long mStartTimeMillis = 0;
 	private long mFrameCount = 0;
 	private long mCountBeginTime = 0;
+	private long mLastTimeMillis = 0;
+	private long mTargetInterval = 0;
 	
 	private String mOptions = null;
 	private String mAddress = null;
 	private int[] mFpsRange = null;
+	private int mVideoFps = -1;
 	
 	LiveMediaRecorder(Activity activity, ViewGroup previewHolder) {
 		mActivity = activity;
@@ -64,7 +67,9 @@ public class LiveMediaRecorder {
 				height = Integer.parseInt(size[1]);
 			} else if (name.equalsIgnoreCase("frameRate")) {
 				frameRate = Integer.parseInt(value);
-			} else if (name.equalsIgnoreCase("videoEncoder")) {
+			} else if (name.equalsIgnoreCase("videoFps")) {
+				mVideoFps = Integer.parseInt(value);
+			}else if (name.equalsIgnoreCase("videoEncoder")) {
 				if (value.equalsIgnoreCase("hardware")) {
 					videoEncoderType = CoreRecorder.EncoderType.HARDWARE_VIDEO;
 				} else {
@@ -127,11 +132,29 @@ public class LiveMediaRecorder {
 		
 		mStartTimeMillis = System.currentTimeMillis();
 		mCountBeginTime = mStartTimeMillis;
+		mLastTimeMillis = mStartTimeMillis;
+		mTargetInterval = 1000 / mVideoFps;
+
 		mRecording = true;
 		// Start feeding video frame.
 		mCamera.setPreviewCallback(new PreviewCallback() {
 			@Override
 			public void onPreviewFrame(byte[] data, Camera cam) {
+				if (mVideoFps > 0) {
+					long currentTime = System.currentTimeMillis();
+					long currentInterval = currentTime - mLastTimeMillis;
+					if (currentInterval < mTargetInterval) {
+						// The time we should send a frame has not arrived yet.
+						return;
+					}
+					// Now the time has arrived. And in most case it's a little delayed.
+					long delay = currentInterval - mTargetInterval;
+					// So next time we will allow a frame to be sent earlier (i.e., make the target interval smaller).
+					mTargetInterval = (1000 / mVideoFps) - delay;
+					
+					mLastTimeMillis = currentTime;
+				}
+				
 				Size s = mCamera.getParameters().getPreviewSize();
 				int width = s.width, height = s.height;
 				if (mRecording) {
@@ -155,15 +178,18 @@ public class LiveMediaRecorder {
 						
 						data = tightData;
 					}
-					mCoreRecorder.videoFrameReceived(data, pts);
+					mCoreRecorder.videoFrameReceived(data, pts);					
 				}
+				
 				long currentTime = System.currentTimeMillis();
 				mFrameCount += 1;
 				// Update information every 1000ms (i.e. 1s).
 				if (currentTime - mCountBeginTime > 1000) {
 					double fps = mFrameCount / ((currentTime - mCountBeginTime)/1000.0);
 					String info = String.format(Locale.ENGLISH, mActivity.getResources().getString(R.string.video_size) + ": %dx%d, " + mActivity.getResources().getString(R.string.frame_rate) + ": %.2f FPS (in range [%d, %d]).", s.width, s.height, fps, mFpsRange[0]/1000, mFpsRange[1]/1000);
-					info += "\n" + String.format(Locale.ENGLISH, mActivity.getResources().getString(R.string.current_bitrate) + ": audio %.2f kbps, video %.2f kbps", mCoreRecorder.getCurrentAudioBitrateKbps(), mCoreRecorder.getCurrentVideoBitrateKbps());
+					if (mRecording) {
+						info += "\n" + String.format(Locale.ENGLISH, mActivity.getResources().getString(R.string.current_bitrate) + ": audio %.2f kbps, video %.2f kbps", mCoreRecorder.getCurrentAudioBitrateKbps(), mCoreRecorder.getCurrentVideoBitrateKbps());
+					}
 					Log.i(TAG, info);
 					info += "\n" + mActivity.getResources().getString(R.string.options) + " " + mOptions;
 					info += "\n" + mActivity.getResources().getString(R.string.address) + " " + mAddress;
