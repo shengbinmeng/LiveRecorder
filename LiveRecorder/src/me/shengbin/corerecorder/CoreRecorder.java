@@ -85,17 +85,15 @@ public class CoreRecorder {
 		mAudioEncoder.open(mSampleRate, mChannelCount, mAudioBitrate);
 		mVideoEncoder.open(mWidth, mHeight, mFrameRate, mVideoBitrate);
 		
-//		mController = new QualityController(this);
-//		mController.start();
+		mController = new QualityController(this);
+		mController.start();
 	}
 	
 	public void stop() {
 		mAudioEncoder.close();
 		mVideoEncoder.close();
 		mOutput.close();
-		if (mController != null) {
-			mController.stop();
-		}
+		mController.stop();
 	}
 		
 	public void videoFrameReceived(byte[] pixels, long pts) {

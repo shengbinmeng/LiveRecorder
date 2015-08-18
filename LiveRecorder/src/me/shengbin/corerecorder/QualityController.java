@@ -3,7 +3,10 @@ package me.shengbin.corerecorder;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.util.Log;
+
 public class QualityController {
+	private static final String TAG = "QualityController";
 	private CoreRecorder mRecorder;
 	private TimerTask mTimerTask = null;
 	
@@ -17,7 +20,8 @@ public class QualityController {
 			@Override
 			public void run() {
 				int bandwidth = predictBandwidth();
-				bandwidthChanged(bandwidth);
+				Log.i(TAG, "Bandwidth changed to " + bandwidth);
+				//bandwidthChanged(bandwidth);
 			}
 		};
 		// Execute the task every 10 seconds.
