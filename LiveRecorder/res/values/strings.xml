@@ -20,4 +20,5 @@
     <string name="frame_rate">Frame rate</string>
     <string name="options">Recording options:</string>
     <string name="address">Output address:</string>
+    <string name="current_bitrate">Current Bitrate</string>
 </resources>

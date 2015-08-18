@@ -34,6 +34,9 @@ public class LiveMediaRecorder {
 	private long mFrameCount = 0;
 	private long mCountBeginTime = 0;
 	
+	private String mOptions = null;
+	private String mAddress = null;
+	
 	LiveMediaRecorder(Activity activity, ViewGroup previewHolder) {
 		mActivity = activity;
 		mPreviewHolder = previewHolder;
@@ -66,6 +69,8 @@ public class LiveMediaRecorder {
 				}
 			}
 		}
+		mOptions = options;
+		mAddress = address;
 		// Audio parameters are set here.
 		int channelConfig = AudioFormat.CHANNEL_IN_STEREO;
 		int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
@@ -151,10 +156,13 @@ public class LiveMediaRecorder {
 				}
 				long currentTime = System.currentTimeMillis();
 				mFrameCount += 1;
-				// Update FPS every 1000ms (i.e. 1s).
+				// Update information every 1000ms (i.e. 1s).
 				if (currentTime - mCountBeginTime > 1000) {
 					double fps = mFrameCount / ((currentTime - mCountBeginTime)/1000.0);
 					String info = String.format(Locale.ENGLISH, mActivity.getResources().getString(R.string.video_size) + ": %dx%d, " + mActivity.getResources().getString(R.string.frame_rate) + ": %.2f FPS", s.width, s.height, fps);
+					info += "\n" + mActivity.getResources().getString(R.string.options) + mOptions;
+					info += "\n" + mActivity.getResources().getString(R.string.address) + mAddress;
+					info += "\n" + String.format(Locale.ENGLISH, mActivity.getResources().getString(R.string.current_bitrate) + ": audio %.2f kbps, video %.2f kbps", mCoreRecorder.getCurrentAudioBitrateKbps(), mCoreRecorder.getCurrentVideoBitrateKbps());
 					Log.i(TAG, info);
 					mCountBeginTime = currentTime;
 					mFrameCount = 0;

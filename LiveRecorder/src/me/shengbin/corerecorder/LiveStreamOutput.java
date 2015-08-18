@@ -9,6 +9,9 @@ import android.util.Log;
 public class LiveStreamOutput implements StreamOutput {
 	private static final String TAG = "LiveStreamOutput";
 	private RtmpFlv muxer;
+	private double mCurrentVideoBitrateKbps = 0, mCurrentAudioBitrateKbps = 0;
+	private long mAudioBytesCount = 0, mVideoBytesCount = 0;
+	private long mAudioCountBeginTime = 0, mVideoCountBeginTime = 0;
 	
 	@Override
 	public void open(String url) throws IOException {
@@ -18,6 +21,9 @@ public class LiveStreamOutput implements StreamOutput {
 			throw new IOException("rtmp connect failed");
 		}
 		muxer.start();
+		mCurrentVideoBitrateKbps = mCurrentAudioBitrateKbps = 0;
+		mAudioBytesCount = mVideoBytesCount = 0;
+		mAudioCountBeginTime = mVideoCountBeginTime = System.currentTimeMillis();
 	}
 	
 	@Override
@@ -30,6 +36,13 @@ public class LiveStreamOutput implements StreamOutput {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		mVideoBytesCount += data.length;
+		long currentTime = System.currentTimeMillis();
+		if (currentTime - mVideoCountBeginTime > 1000) {
+			mCurrentVideoBitrateKbps = mVideoBytesCount * 8 / 1000.0;
+			mVideoBytesCount = 0;
+			mVideoCountBeginTime = currentTime;
 		}
 	}
 	
@@ -44,6 +57,13 @@ public class LiveStreamOutput implements StreamOutput {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		mAudioBytesCount += data.length;
+		long currentTime = System.currentTimeMillis();
+		if (currentTime - mAudioCountBeginTime > 1000) {
+			mCurrentAudioBitrateKbps = mAudioBytesCount * 8 / 1000.0;
+			mAudioBytesCount = 0;
+			mAudioCountBeginTime = currentTime;
+		}
 	}
 
 	@Override
@@ -52,5 +72,15 @@ public class LiveStreamOutput implements StreamOutput {
 			muxer.stop();
 			muxer.release();
 		}
+	}
+
+	@Override
+	public double getCurrentAudioBitrateKbps() {
+		return mCurrentAudioBitrateKbps;
+	}
+
+	@Override
+	public double getCurrentVideoBitrateKbps() {
+		return mCurrentVideoBitrateKbps;
 	}
 }

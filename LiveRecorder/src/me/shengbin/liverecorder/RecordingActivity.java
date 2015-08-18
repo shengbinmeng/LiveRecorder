@@ -31,7 +31,7 @@ public class RecordingActivity extends Activity implements LiveMediaRecorder.Cal
 		
 		mInfoText = (TextView) findViewById(R.id.text_info);
 		mInfoText.setText("");
-		mInfoText.setTextSize(32);
+		mInfoText.setTextSize(18);
 		mControlButton = (Button) findViewById(R.id.button_control);
 		mControlButton.setOnClickListener(new View.OnClickListener() {
 			@Override

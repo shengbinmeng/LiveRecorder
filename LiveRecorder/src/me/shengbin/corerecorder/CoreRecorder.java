@@ -141,4 +141,12 @@ public class CoreRecorder {
 		}
 		Log.i(TAG, "Updated with video bitrate: " + mVideoBitrate + ", and audio bitrate: " + mAudioBitrate);
 	}
+	
+	public double getCurrentVideoBitrateKbps() {
+		return mOutput.getCurrentVideoBitrateKbps();
+	}
+	
+	public double getCurrentAudioBitrateKbps() {
+		return mOutput.getCurrentAudioBitrateKbps();
+	}
 }

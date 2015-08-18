@@ -7,4 +7,6 @@ public interface StreamOutput {
 	void encodedFrameReceived(byte[] data, MediaCodec.BufferInfo bufferInfo);
 	void encodedSamplesReceived(byte[] data, MediaCodec.BufferInfo bufferInfo);
 	void close();
+	double getCurrentAudioBitrateKbps();
+	double getCurrentVideoBitrateKbps();
 }
