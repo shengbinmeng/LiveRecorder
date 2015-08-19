@@ -69,7 +69,7 @@ public class LiveMediaRecorder {
 				frameRate = Integer.parseInt(value);
 			} else if (name.equalsIgnoreCase("videoFps")) {
 				mVideoFps = Integer.parseInt(value);
-			}else if (name.equalsIgnoreCase("videoEncoder")) {
+			} else if (name.equalsIgnoreCase("videoEncoder")) {
 				if (value.equalsIgnoreCase("hardware")) {
 					videoEncoderType = CoreRecorder.EncoderType.HARDWARE_VIDEO;
 				} else {
@@ -119,6 +119,9 @@ public class LiveMediaRecorder {
 		mPreview.setDisplaySize(displayWidth, displayHeight);
 		
 		mCoreRecorder = new CoreRecorder();
+		if (mVideoFps > 0) {
+			frameRate = mVideoFps;
+		}
 		mCoreRecorder.configure(sampleRate, 2, audioBitrate, width, height, frameRate, videoBitrate, videoEncoderType, address);
 		
 		mPrepared = true;
@@ -186,7 +189,7 @@ public class LiveMediaRecorder {
 				// Update information every 1000ms (i.e. 1s).
 				if (currentTime - mCountBeginTime > 1000) {
 					double fps = mFrameCount / ((currentTime - mCountBeginTime)/1000.0);
-					String info = String.format(Locale.ENGLISH, mActivity.getResources().getString(R.string.video_size) + ": %dx%d, " + mActivity.getResources().getString(R.string.frame_rate) + ": %.2f FPS (in range [%d, %d]).", s.width, s.height, fps, mFpsRange[0]/1000, mFpsRange[1]/1000);
+					String info = String.format(Locale.ENGLISH, mActivity.getResources().getString(R.string.video_size) + ": %dx%d, " + mActivity.getResources().getString(R.string.frame_rate) + ": %.2f FPS (preview range [%d, %d]).", s.width, s.height, fps, mFpsRange[0]/1000, mFpsRange[1]/1000);
 					if (mRecording) {
 						info += "\n" + String.format(Locale.ENGLISH, mActivity.getResources().getString(R.string.current_bitrate) + ": audio %.2f kbps, video %.2f kbps", mCoreRecorder.getCurrentAudioBitrateKbps(), mCoreRecorder.getCurrentVideoBitrateKbps());
 					}
