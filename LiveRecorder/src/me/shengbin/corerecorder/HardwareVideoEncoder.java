@@ -2,11 +2,17 @@ package me.shengbin.corerecorder;
 
 import java.nio.ByteBuffer;
 
+import android.annotation.TargetApi;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
+import android.media.MediaCodecInfo.CodecCapabilities;
+import android.media.MediaCodecInfo.EncoderCapabilities;
 import android.media.MediaCodecList;
 import android.media.MediaFormat;
+import android.os.Build;
+import android.os.Bundle;
 import android.util.Log;
+import android.util.Range;
 
 public class HardwareVideoEncoder implements VideoEncoder {
 	private static final String TAG = "HardwareVideoEncoder";
@@ -23,7 +29,8 @@ public class HardwareVideoEncoder implements VideoEncoder {
     private boolean mEncoding = false;
     private StreamOutput mOutput = null;
 
-    @Override
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+	@Override
 	public void open(int width, int height, int frameRate, int bitrate) throws Exception {
     	MediaCodecInfo codecInfo = selectCodec(MIMETYPE_VIDEO_AVC);
     	if (codecInfo == null) {
@@ -42,6 +49,16 @@ public class HardwareVideoEncoder implements VideoEncoder {
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, IFRAME_INTERVAL);
         
         mEncoder = MediaCodec.createByCodecName(codecInfo.getName());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        	// These features are available only in APL level 21 and later.
+        	CodecCapabilities codecCap = codecInfo.getCapabilitiesForType(MIMETYPE_VIDEO_AVC);
+        	EncoderCapabilities encoderCap = codecCap.getEncoderCapabilities();
+        	Range<Integer> range = encoderCap.getComplexityRange();
+        	int complexity = range.getUpper();
+        	format.setInteger(MediaFormat.KEY_COMPLEXITY, complexity);
+        	Log.i(TAG, "Encoder complexity: " + complexity + ", in range [" + range.getLower() + ", " + range.getUpper() + "].");
+        	format.setInteger(MediaFormat.KEY_BITRATE_MODE, EncoderCapabilities.BITRATE_MODE_VBR);
+        }
         mEncoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         mEncoder.start();
         mWidth = width;
@@ -75,7 +92,7 @@ public class HardwareVideoEncoder implements VideoEncoder {
      * Returns a color format that is supported by the codec and this app.
      */
     private static int selectColorFormat(MediaCodecInfo codecInfo, String mimeType) {
-        MediaCodecInfo.CodecCapabilities capabilities = codecInfo.getCapabilitiesForType(mimeType);
+        CodecCapabilities capabilities = codecInfo.getCapabilitiesForType(mimeType);
         int selected = 0;
         for (int i = 0; i < capabilities.colorFormats.length; i++) {
             int colorFormat = capabilities.colorFormats[i];
@@ -102,12 +119,12 @@ public class HardwareVideoEncoder implements VideoEncoder {
     private static boolean isRecognizedFormat(int colorFormat) {
         switch (colorFormat) {
             // These are the formats we know how to handle.
-            case MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar: // 19
-            case MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420PackedPlanar: // 20
-            case MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar: // 21
-            case MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420PackedSemiPlanar: // 39
-            case MediaCodecInfo.CodecCapabilities.COLOR_TI_FormatYUV420PackedSemiPlanar: // 2130706688
-            case MediaCodecInfo.CodecCapabilities.COLOR_QCOM_FormatYUV420SemiPlanar: // 2141391872
+            case CodecCapabilities.COLOR_FormatYUV420Planar: // 19
+            case CodecCapabilities.COLOR_FormatYUV420PackedPlanar: // 20
+            case CodecCapabilities.COLOR_FormatYUV420SemiPlanar: // 21
+            case CodecCapabilities.COLOR_FormatYUV420PackedSemiPlanar: // 39
+            case CodecCapabilities.COLOR_TI_FormatYUV420PackedSemiPlanar: // 2130706688
+            case CodecCapabilities.COLOR_QCOM_FormatYUV420SemiPlanar: // 2141391872
                 return true;
             default:
                 return false;
@@ -120,13 +137,13 @@ public class HardwareVideoEncoder implements VideoEncoder {
      */
     private static boolean isSemiPlanarYUV(int colorFormat) {
         switch (colorFormat) {
-            case MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar:
-            case MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420PackedPlanar:
+            case CodecCapabilities.COLOR_FormatYUV420Planar:
+            case CodecCapabilities.COLOR_FormatYUV420PackedPlanar:
                 return false;
-            case MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar:
-            case MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420PackedSemiPlanar:
-            case MediaCodecInfo.CodecCapabilities.COLOR_TI_FormatYUV420PackedSemiPlanar:
-            case MediaCodecInfo.CodecCapabilities.COLOR_QCOM_FormatYUV420SemiPlanar:
+            case CodecCapabilities.COLOR_FormatYUV420SemiPlanar:
+            case CodecCapabilities.COLOR_FormatYUV420PackedSemiPlanar:
+            case CodecCapabilities.COLOR_TI_FormatYUV420PackedSemiPlanar:
+            case CodecCapabilities.COLOR_QCOM_FormatYUV420SemiPlanar:
                 return true;
             default:
                 throw new RuntimeException("unknown format " + colorFormat);
@@ -247,10 +264,18 @@ public class HardwareVideoEncoder implements VideoEncoder {
 		mOutput = output;
 	}
 
+	@TargetApi(Build.VERSION_CODES.KITKAT)
 	@Override
 	public boolean updateBitrate(int bitrate) {
-		// TODO Auto-generated method stub
-		return false;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+			// In API level 19 and later, we can set video bitrate on the fly.
+			Bundle params = new Bundle();
+		    params.putInt(MediaCodec.PARAMETER_KEY_VIDEO_BITRATE, bitrate);
+		    mEncoder.setParameters(params);
+		    return true;
+		} else {
+			return false;
+		}
 	}
 
 }

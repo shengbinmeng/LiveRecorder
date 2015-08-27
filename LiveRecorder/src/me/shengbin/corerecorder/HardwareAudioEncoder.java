@@ -22,7 +22,7 @@ public class HardwareAudioEncoder implements AudioEncoder {
     private boolean mEncoding = false;
 
     @Override
-	public void open(int sampleRate, int channelCount, int bitrate) {
+	public void open(int sampleRate, int channelCount, int bitrate) throws Exception {
 		MediaFormat format = MediaFormat.createAudioFormat(MIMETYPE_AUDIO_AAC, sampleRate, channelCount);
         format.setInteger(MediaFormat.KEY_BIT_RATE, bitrate);
 		int bufferSize = AudioRecord.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_IN_STEREO,
