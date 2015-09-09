@@ -53,7 +53,7 @@ public class LiveMediaRecorder {
 		int sampleRate = 44100, channelCount = 2, audioBitrate = 20000;
 		int videoEncoderType = CoreRecorder.EncoderType.HARDWARE_VIDEO;
 		String[] parts = options.split(" ");
-		for(int i = 0; i < parts.length; i++) {
+		for (int i = 0; i < parts.length; i++) {
 			String part = parts[i];
 			String[] pair = part.split(":");
 			String name = pair[0], value = pair[1];
@@ -66,13 +66,16 @@ public class LiveMediaRecorder {
 				width = Integer.parseInt(size[0]);
 				height = Integer.parseInt(size[1]);
 			} else if (name.equalsIgnoreCase("frameRate")) {
+				// The option frameRate is only used to get a preferred preview FPS range from the camera.
+				// See videoFps above.
 				frameRate = Integer.parseInt(value);
 			} else if (name.equalsIgnoreCase("videoFps")) {
+				// We will try to adjust the video frame rate to a fixed value specified by videoFps.
 				mVideoFps = Integer.parseInt(value);
 			} else if (name.equalsIgnoreCase("videoEncoder")) {
 				if (value.equalsIgnoreCase("hardware")) {
 					videoEncoderType = CoreRecorder.EncoderType.HARDWARE_VIDEO;
-				} else {
+				} else if (value.equalsIgnoreCase("software")) {
 					videoEncoderType = CoreRecorder.EncoderType.SOFTWARE_VIDEO;
 				}
 			}
@@ -136,7 +139,9 @@ public class LiveMediaRecorder {
 		mStartTimeMillis = System.currentTimeMillis();
 		mCountBeginTime = mStartTimeMillis;
 		mLastTimeMillis = mStartTimeMillis;
-		mTargetInterval = 1000 / mVideoFps;
+		if (mVideoFps > 0) {
+			mTargetInterval = 1000 / mVideoFps;
+		}
 
 		mRecording = true;
 		// Start feeding video frame.
