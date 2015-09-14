@@ -49,6 +49,7 @@ int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height, jint
 	LOGD("fps_num = %d, fps_den = %d, bitrate = %d, rc method = %d\n", param.i_fps_num, param.i_fps_den, param.rc.i_bitrate, param.rc.i_rc_method);
 	LOGD("b_deblocking_filter = %d, i_deblocking_filter_alphac0 = %d, i_deblocking_filter_beta = %d", param.b_deblocking_filter, param.i_deblocking_filter_alphac0, param.i_deblocking_filter_beta);
 	LOGD("b_cabac = %d, i_threads = %d", param.b_cabac, param.i_threads);
+	LOGD("b_repeat_headers = %d", param.b_repeat_headers);
 	h = x264_encoder_open( &param );
 
 	if (!h)
