@@ -14,10 +14,12 @@
 extern "C" {
 #endif
 
-JNIEXPORT jboolean JNICALL Java_me_shengbin_corerecorder_RtmpFlv_rtmpInit(JNIEnv * env, jobject obj, jstring url);
-JNIEXPORT jboolean JNICALL Java_me_shengbin_corerecorder_RtmpFlv_rtmpReconnect(JNIEnv * env, jobject obj, jstring url);
-JNIEXPORT jboolean JNICALL Java_me_shengbin_corerecorder_RtmpFlv_rtmpSend(JNIEnv * env, jobject obj, jbyteArray array, jint type, jint timestamp);
-JNIEXPORT void JNICALL Java_me_shengbin_corerecorder_RtmpFlv_rtmpClose(JNIEnv * env, jobject obj);
+JNIEXPORT jboolean JNICALL Java_me_shengbin_corerecorder_LiveStreamOutput_rtmpInit(JNIEnv * env, jobject obj, jstring url);
+JNIEXPORT jboolean JNICALL Java_me_shengbin_corerecorder_LiveStreamOutput_rtmpReconnect(JNIEnv * env, jobject obj, jstring url);
+JNIEXPORT jboolean JNICALL Java_me_shengbin_corerecorder_LiveStreamOutput_rtmpSend(JNIEnv * env, jobject obj, jbyteArray array, jint type, jint timestamp);
+JNIEXPORT void JNICALL Java_me_shengbin_corerecorder_LiveStreamOutput_rtmpClose(JNIEnv * env, jobject obj);
+JNIEXPORT void JNICALL Java_me_shengbin_corerecorder_LiveStreamOutput_rtmpSendVideoData(JNIEnv * env, jobject obj, jbyteArray array, jint timestamp);
+JNIEXPORT void JNICALL Java_me_shengbin_corerecorder_LiveStreamOutput_rtmpSendAudioData(JNIEnv * env, jobject obj, jbyteArray array, jint timestamp);
 
 #ifdef __cplusplus
 }
