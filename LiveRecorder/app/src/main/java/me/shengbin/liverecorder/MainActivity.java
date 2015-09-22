@@ -18,7 +18,7 @@ public class MainActivity extends Activity {
 	private EditText mEditAddress = null;
 	private final static String DEFAULT_OPTIONS = "videoBitrate:500 audioBitrate:20 videoSize:640x480 videoFps:15 videoEncoder:software";
 	private final static String DEFAULT_SERVER = "rtmp://rtmpserver1.test.strongene.com/origin/";
-	
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

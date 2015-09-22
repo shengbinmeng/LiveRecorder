@@ -52,23 +52,22 @@ enum
 };
 
 static RTMP 	*rtmp = NULL;
-char * rtmp_connect_url = NULL;
+char            *rtmp_connect_url = NULL;
 unsigned int    sps_len;
 unsigned char   *sps;
 unsigned int    pps_len;
 unsigned char   *pps;
-long			start_time = -1;
 bool			aac_spec_sent = false;
 bool			sps_pps_sent = false;
 bool            is_connected = false;
-FrameList       * frameList;
+FrameList       *frameList;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t  cond =  PTHREAD_COND_INITIALIZER;
 pthread_t       frame_sending_thread;
 bool            frame_sending_thread_started = false;
 
-char * put_byte( char *output, uint8_t nVal)
+char * put_byte(char *output, uint8_t nVal)
 {
     output[0] = nVal;
     return output+1;
@@ -363,15 +362,10 @@ void rtmp_send_audio(unsigned char * buf, int len, int timestamp)
 void *frame_task_execute(void *arg)
 {
     Frame * frame = NULL;
-    int frame_size = 0, i = 0;
-    unsigned char frame_type = NAL_SLICE;
-    int cur_pos = 0;
-    unsigned char * frame_data;
-    NaluUnit naluUnit;
 
     while(TRUE) {
         pthread_mutex_lock(&mutex);
-        while(!frameList || frameList->size == 0)
+        while(frame_sending_thread_started && (!frameList || frameList->size == 0))
         {
             pthread_cond_wait(&cond, &mutex);
         }
