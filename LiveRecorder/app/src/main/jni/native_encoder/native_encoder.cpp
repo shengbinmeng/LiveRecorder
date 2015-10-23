@@ -30,15 +30,13 @@ int native_encoder_open(JNIEnv *env, jobject thiz, jint width, jint height, jint
 
 	int_to_str(fps, fps_str);
 	int_to_str(x264_bitrate, bitrate_str);
-	int_to_str(x264_bitrate*2, vbv_maxrate);
-	int_to_str(x264_bitrate/fps, vbv_bufsize_str);
 
 	if( x264_param_default_preset( &param, "superfast", "zerolatency" ) < 0 )
 		return -1;
 
 	x264_param_parse( &param, "bitrate", bitrate_str );
-	x264_param_parse( &param, "vbv-maxrate", vbv_maxrate);
-	x264_param_parse( &param, "vbv-bufsize", b_cbr ? vbv_bufsize_str : bitrate_str);
+	x264_param_parse( &param, "vbv-maxrate", bitrate_str);
+	x264_param_parse( &param, "vbv-bufsize", bitrate_str);
 
 	x264_param_parse( &param, "fps", fps_str );
 	x264_param_parse( &param, "keyint", fps_str);
@@ -180,16 +178,15 @@ int native_encoder_update_bitrate(JNIEnv *env, jobject thiz, jint bitrate)
 		return -1;
 
 	int_to_str(x264_bitrate, bitrate_str);
-	int_to_str(x264_bitrate*2, vbv_maxrate);
 
 	x264_param_parse( &param, "bitrate", bitrate_str );
-	x264_param_parse( &param, "vbv-maxrate", vbv_maxrate);
+	x264_param_parse( &param, "vbv-maxrate", bitrate_str);
 	x264_param_parse( &param, "vbv-bufsize", bitrate_str);
 
 	LOGI("reconfig: fps_num = %d, fps_den = %d, bitrate = %d, rc method = %d, vbv_bufsize = %d, vbv_maxrate = %d\n", param.i_fps_num, param.i_fps_den, param.rc.i_bitrate, param.rc.i_rc_method, param.rc.i_vbv_buffer_size, param.rc.i_vbv_max_bitrate);
 
 	ret = x264_encoder_reconfig(h, &param);
-
+	LOGI("reconfig rv: %d\n:", ret);
 	return ret;
 }
 
