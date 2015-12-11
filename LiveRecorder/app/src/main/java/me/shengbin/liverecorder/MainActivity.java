@@ -11,6 +11,9 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 public class MainActivity extends Activity {
 
@@ -41,6 +44,24 @@ public class MainActivity extends Activity {
         }
         String address = DEFAULT_SERVER + serial;
         mEditAddress.setText(address);
+
+        // We can get the publish address configuration from remote, e.g. using JSON.
+        // See http://kb.qiniu.com/%E4%B8%83%E7%89%9B%E7%9B%B4%E6%92%AD%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3&FAQ
+        // For test, we just hardcode a json string here. In practice, it should be obtained from the server.
+        String streamJsonStrFromServer = "{\"id\":\"z1.meipai.shijun\",\"createdAt\":\"2015-11-10T11:41:27.091+08:00\",\"updatedAt\":\"2015-11-10T11:41:27.091+08:00\",\"title\":\"shijun\",\"hub\":\"meipai\",\"disabled\":false,\"publishKey\":\"test\",\"publishSecurity\":\"static\",\"hosts\":{\"publish\":{\"rtmp\":\"publish.1iptv.com\"},\"live\":{\"hdl\":\"live-hdl.1iptv.com\",\"hls\":\"live-hls.1iptv.com\",\"http\":\"live-hls.1iptv.com\",\"rtmp\":\"live-rtmp.1iptv.com\"},\"playback\":{\"hls\":\"playback.1iptv.com\",\"http\":\"playback.1iptv.com\"}}}";
+        try {
+            JSONObject jsonObject = new JSONObject(streamJsonStrFromServer);
+            if (jsonObject != null) {
+                String rtmpPublishHost = jsonObject.getJSONObject("hosts").getJSONObject("publish").getString("rtmp");
+                String hub = jsonObject.getString("hub");
+                String title = jsonObject.getString("title");
+                String publishKey = jsonObject.getString("publishKey");
+                address = "rtmp://" + rtmpPublishHost + "/" + hub + "/" + title + "?key=" + publishKey;
+                mEditAddress.setText(address);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
     
     private void launchRecording() {
